@@ -1,0 +1,83 @@
+/* RegisterPage.css */
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(0, 0) scale(1.1);
+        /* Slightly larger at midpoint */
+    }
+}
+
+@keyframes borderGrow {
+    0% {
+        width: 10vw;
+        /* Start with 10% width */
+        height: 10vh;
+        /* Start with 10% height */
+    }
+
+    100% {
+        width: 100vw;
+        /* Grow to 100% width */
+        height: 190vh;
+        /* Grow to final height */
+    }
+}
+
+.half-circle-login {
+    position: fixed;
+    /* Fixed positioning to keep it in the bottom-right corner */
+    bottom: -100%;
+    /* Adjust bottom positioning to move it down */
+    right: -50%;
+    /* Adjust right positioning to center the circle */
+    width: 100vw;
+    /* Increase width for larger diameter */
+    height: 190vh;
+    /* Increase height to match width */
+    background-color: #2eee07;
+    /* Matches primary theme color */
+    border-radius: 100%;
+    /* Creates a full circle */
+    z-index: -1;
+    /* Ensures the circle is behind the content */
+    animation: borderGrow 2s ease forwards, pulse 5s infinite ease-in-out 2s;
+    /* Applies the pulse animation */
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .half-circle-login {
+        top: -140%;
+        /* Adjust bottom position to fit smaller screens */
+        right: -90%;
+        /* Move it further right for mobile */
+        width: 190vw;
+        /* Increase width for larger diameter on mobile */
+        height: 170vh;
+        /* Increase height to match width */
+        animation: pulse 6s infinite ease-in-out;
+        /* Slow down animation for mobile */
+    }
+}
+
+/* Extra Small Screens */
+@media (max-width: 480px) {
+    .half-circle-login {
+        top: -140%;
+        /* Further adjust bottom position for very small screens */
+        right: -90%;
+        /* Further move it right */
+        width: 190vw;
+        /* Further increase width */
+        height: 170vh;
+        /* Further increase height */
+        animation: pulse 7s infinite ease-in-out;
+        /* Slow down animation even more */
+    }
+}
