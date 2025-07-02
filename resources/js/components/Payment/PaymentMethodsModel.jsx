@@ -1,18 +1,28 @@
 import React, { useState } from "react";
-import Dialog from "@mui/material/Dialog";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import Slide from "@mui/material/Slide";
+import {
+    Dialog,
+    AppBar,
+    Toolbar,
+    IconButton,
+    Typography,
+    Slide,
+    Box,
+    Paper,
+    Tooltip,
+    Avatar,
+    Grid,
+    useMediaQuery,
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Box, AppBar, Toolbar, Typography, IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import PaymentIcon from "@mui/icons-material/Payment";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import PaymentMethodsList from "./PaymentMethodsList";
-import CashfreePaymentUI from "./CashfreePaymentUI";
 import WalletIcon from "@mui/icons-material/Wallet";
-import { useSweetAlert } from '../Theme/SweetAlert';
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { useSweetAlert } from "../Theme/SweetAlert";
+import CashfreePaymentUI from "./CashfreePaymentUI";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="left" ref={ref} {...props} />;
@@ -25,46 +35,49 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const [showCashfree, setShowCashfree] = useState(false);
     const [selectedMethod, setSelectedMethod] = useState(null);
+    const [selectedSection, setSelectedSection] = useState(null);
 
-    const paymentMethods = [
-        {
-            title: "Cards",
-            description: "Add credit and debit cards",
-            icon: <CreditCardIcon />,
-        },
-        {
-            title: "Netbanking",
-            description: "Select Bank",
-            icon: <AccountBalanceIcon />,
-        },
-        {
-            title: "UPI",
-            description: "UPI payment via Cashfree",
-            icon: <PaymentIcon />,
-        },
-        {
-            title: "Wallet",
-            description: "Pay Through Wallet",
-            icon: <WalletIcon />,
-        },
-        {
-            title: "Pay on delivery",
-            description: "Pay cash at the time of delivery",
+    const onlineMethods = [
+        { title: "Cards", description: "Add credit and debit cards", icon: <CreditCardIcon /> },
+        { title: "Netbanking", description: "Pay via your bank", icon: <AccountBalanceIcon /> },
+        { title: "UPI", description: "Pay using any UPI app", icon: <PaymentIcon /> },
+        { title: "Wallet", description: "Use your wallet balance", icon: <WalletIcon /> },
+        { title: "PhonePe", description: "Pay via PhonePe", icon: <PaymentIcon /> },
+        { title: "Google Pay", description: "Pay via GPay", icon: <PaymentIcon /> },
+        { title: "Cred", description: "Pay using Cred", icon: <PaymentIcon /> },
+        { title: "Paytm", description: "Pay using Paytm", icon: <WalletIcon /> },
+        { title: "More", description: "More payment options coming soon", icon: <MoreHorizIcon /> },
+    ];
+
+    const offlineMethods = [
+        { title: "Cash on Delivery",
+            description: "Cash at your door",
             icon: <LocalShippingIcon />,
+            isComingSoon: true,
+        },
+        {
+            title: "UPI/BHIM on Delivery",
+            description: "Scan and pay at delivery",
+            icon: <PaymentIcon />,
             isComingSoon: true,
         },
     ];
 
     const handlePaymentMethodClick = (method) => {
-        if (
-            method.title === "Cards" ||
-            method.title === "Netbanking" ||
-            method.title === "UPI" ||
-            method.title === "Wallet"
-        ) {
+        const onlineTitles = onlineMethods.map((m) => m.title);
+
+        if (onlineTitles.includes(method.title) && !method.isComingSoon) {
             setSelectedMethod(method.title);
+            setSelectedSection("online");
             setShowCashfree(true);
+        } else if (method.isComingSoon) {
+            showAlert({
+                icon: "info",
+                title: "Coming Soon",
+                text: "This payment method will be available soon!",
+            });
         } else {
+            setSelectedSection("offline");
             showAlert({
                 icon: "info",
                 title: "Not Supported",
@@ -76,8 +89,60 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
     const handleClose = () => {
         setShowCashfree(false);
         setSelectedMethod(null);
+        setSelectedSection(null);
         onClose();
     };
+
+    const renderMethodGrid = (methods) => (
+        <Grid container spacing={2}>
+            {methods.map((method, index) => (
+                <Grid item xs={4} sm={3} md={3} lg={3} key={index} sx={{ textAlign: "center" }}>
+                    <Tooltip title={method.description} arrow placement="top">
+                        <Box
+                            sx={{
+                                cursor: method.isComingSoon ? "not-allowed" : "pointer",
+                                opacity: method.isComingSoon ? 0.7 : 1,
+                                "&:hover .avatar": {
+                                    transform: method.isComingSoon ? "none" : "scale(1.1)",
+                                },
+                            }}
+                            onClick={() => handlePaymentMethodClick(method)}
+                        >
+                            <Avatar
+                                className="avatar"
+                                sx={{
+                                    bgcolor: method.isComingSoon
+                                        ? "grey.300"
+                                        : "primary.main",
+                                    color: "#fff",
+                                    width: 60,
+                                    height: 60,
+                                    mx: "auto",
+                                    transition: "transform 0.2s",
+                                }}
+                            >
+                                {method.icon}
+                            </Avatar>
+                            <Typography
+                                variant="body2"
+                                sx={{ mt: 1, fontWeight: 500 }}
+                            >
+                                {method.title}
+                            </Typography>
+                            {method.isComingSoon && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{ color: "error.main", fontWeight: "bold" }}
+                                >
+                                    Coming Soon
+                                </Typography>
+                            )}
+                        </Box>
+                    </Tooltip>
+                </Grid>
+            ))}
+        </Grid>
+    );
 
     return (
         <Dialog
@@ -109,8 +174,6 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
                         backgroundColor: "#fff",
                         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                         color: "transparent",
-                        borderBottomLeftRadius: "10px",
-                        borderBottomRightRadius: "10px",
                         zIndex: 10,
                     }}
                 >
@@ -119,12 +182,7 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
                             <ArrowBackIcon />
                         </IconButton>
                         <Typography
-                            sx={{
-                                ml: 2,
-                                flex: 1,
-                                color: "black",
-                                fontWeight: "bold",
-                            }}
+                            sx={{ ml: 2, flex: 1, color: "black", fontWeight: "bold" }}
                             variant="h6"
                         >
                             {showCashfree ? "Cashfree Payment" : "Select Payment Method"}
@@ -135,10 +193,11 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
                 <Box
                     sx={{
                         mt: 2,
-                        backgroundColor: "#fff",
-                        borderRadius: "12px",
-                        padding: "16px",
-                        boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
+                        px: 2,
+                        pb: 2,
+                        overflowY: "auto",
+                        flexGrow: 1,
+                        backgroundColor: "#f7f7f7",
                     }}
                 >
                     {showCashfree ? (
@@ -149,10 +208,44 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
                             onPaymentSuccess={onPaymentSuccess}
                         />
                     ) : (
-                        <PaymentMethodsList
-                            paymentMethods={paymentMethods}
-                            onMethodClick={handlePaymentMethodClick}
-                        />
+                        <>
+                            <Paper
+                                elevation={3}
+                                sx={{
+                                    p: 2,
+                                    borderRadius: 2,
+                                    mb: 2,
+                                    border: selectedSection === "online" ? `2px solid ${theme.palette.primary.main}` : "none"
+                                }}
+                                onClick={() => setSelectedSection("online")}
+                            >
+                                <Typography
+                                    variant="h6"
+                                    sx={{ fontWeight: "bold", mb: 2 }}
+                                >
+                                    Online Payments
+                                </Typography>
+                                {renderMethodGrid(onlineMethods)}
+                            </Paper>
+
+                            <Paper
+                                elevation={3}
+                                sx={{
+                                    p: 2,
+                                    borderRadius: 2,
+                                    border: selectedSection === "offline" ? `2px solid ${theme.palette.primary.main}` : "none"
+                                }}
+                                onClick={() => setSelectedSection("offline")}
+                            >
+                                <Typography
+                                    variant="h6"
+                                    sx={{ fontWeight: "bold", mb: 2 }}
+                                >
+                                    Offline Payments
+                                </Typography>
+                                {renderMethodGrid(offlineMethods)}
+                            </Paper>
+                        </>
                     )}
                 </Box>
             </Box>

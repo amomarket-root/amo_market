@@ -25,12 +25,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/portal/cashfree/success', [CashfreeController::class, 'paymentSuccess']);
 Route::post('/portal/cashfree/webhook', [CashfreeController::class, 'handleWebhook']);
 
-Route::prefix('auth')->group(function () {
-    // Social authentication callbacks (accessible by guests)
-    Route::get('/google/callback', [PortalAuthenticateController::class, 'googleHandle']);
-    Route::get('/facebook/callback', [PortalAuthenticateController::class, 'facebookHandle']);
-});
-
 Route::prefix('portal/authenticate')->group(function () {
     // Authentication routes
     Route::post('/login', [PortalAuthenticateController::class, 'login']);
