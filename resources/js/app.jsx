@@ -21,7 +21,7 @@ const loaderGif = '/image/loader.gif'; // Assuming the loader.gif is in public/i
 const App = () => {
     // Initialize Google Analytics
     useEffect(() => {
-        ReactGA.initialize('G-ERV17HSB66');
+        ReactGA.initialize('G-SE5TYB3Z80');
     }, []);
 
     return (
