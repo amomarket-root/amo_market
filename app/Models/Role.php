@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class Role extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string'; // Use string for UUIDs
+
     public $incrementing = false; // Disable auto-incrementing
+
     protected $table = 'roles'; // Table name
+
     protected $primaryKey = 'id';    // Primary key field
+
     protected $fillable = [
         'name',
         'parent_id',

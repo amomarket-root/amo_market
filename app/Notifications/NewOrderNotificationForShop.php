@@ -16,7 +16,7 @@ class NewOrderNotificationForShop extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      *
-     * @param mixed $order
+     * @param  mixed  $order
      */
     public function __construct($order)
     {
@@ -35,11 +35,11 @@ class NewOrderNotificationForShop extends Notification implements ShouldQueue
 
     public function toMail($notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('New Order Received')
             ->view('emails.new_order_shop', [
                 'notifiable' => $notifiable,
-                'order' => $this->order,
+                'order'      => $this->order,
             ]);
     }
 
@@ -49,35 +49,35 @@ class NewOrderNotificationForShop extends Notification implements ShouldQueue
     public function toArray($notifiable)
     {
         return [
-            'order_id' => $this->order->id ?? null,
+            'order_id'     => $this->order->id           ?? null,
             'total_amount' => $this->order->total_amount ?? null,
-            'message' => 'You have received a new order!',
+            'message'      => 'You have received a new order!',
         ];
     }
 
     /**
      * Generate the new order URL.
      *
-     * @param int|string|null $id
+     * @param  int|string|null  $id
      * @return string
      */
     public function newOrderUrl($id)
     {
-        return config('app.url') . '/shop/order-details/' . $id;
+        return config('app.url').'/shop/order-details/'.$id;
     }
 
     /**
      * Save the notification data into the shop_notifications table.
      *
-     * @param object $notifiable
+     * @param  object  $notifiable
      */
     public function toDatabase($notifiable)
     {
         return [
-            'shop_id' => $notifiable->id,
-            'order_id' => $this->order->id,
+            'shop_id'      => $notifiable->id,
+            'order_id'     => $this->order->id,
             'total_amount' => $this->order->total_amount,
-            'is_read' => false,
+            'is_read'      => false,
         ];
     }
 }

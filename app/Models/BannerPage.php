@@ -3,20 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class BannerPage extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
         'shop_id',
         'title',
         'content_image',
-        'status'
+        'status',
     ];
 
     public function shop()

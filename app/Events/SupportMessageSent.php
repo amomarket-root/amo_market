@@ -2,16 +2,18 @@
 
 namespace App\Events;
 
+use App\Models\SupportMessage;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\SupportMessage;
 
 class SupportMessageSent implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public $message;
 
@@ -22,7 +24,7 @@ class SupportMessageSent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('support_chat.' . $this->message->receiver_id);
+        return new Channel('support_chat.'.$this->message->receiver_id);
     }
 
     public function broadcastAs()

@@ -3,17 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class AccountDeletion extends ActiveModel
 {
     use HasUuids;
 
     protected $table = 'account_deletions';
-    protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
 
+    protected $primaryKey = 'id';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
 
     protected $fillable = ['user_name', 'user_email', 'user_contact_number', 'reason', 'feedback'];
 

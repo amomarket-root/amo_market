@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class OrderShop extends ActiveModel
 {
     use HasUuids;
 
     protected $primaryKey = 'id';
+
     public $incrementing = false;
+
     protected $keyType = 'uuid';
 
     protected $table = 'order_shop';
@@ -21,7 +22,7 @@ class OrderShop extends ActiveModel
         'status',
         'notes',
         'status_changed_at',
-        'status_changed_by'
+        'status_changed_by',
     ];
 
     protected $casts = [

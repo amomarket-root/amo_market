@@ -21,7 +21,9 @@
         "spatie/laravel-activitylog": "^4.10"
     },
     "require-dev": {
+        "enlightn/security-checker": "^2.0",
         "fakerphp/faker": "^1.23",
+        "friendsofphp/php-cs-fixer": "^3.75",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.43",
@@ -64,6 +66,14 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "pint": "vendor/bin/pint",
+        "php-cs-fix": "vendor/bin/php-cs-fixer fix",
+        "security-check": "vendor/bin/security-checker security:check composer.lock",
+        "format": [
+            "@pint",
+            "@php-cs-fix",
+            "@security-check"
         ]
     },
     "extra": {

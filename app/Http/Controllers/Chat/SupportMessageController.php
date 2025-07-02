@@ -4,20 +4,19 @@ namespace App\Http\Controllers\Chat;
 
 use App\Events\SupportMessageSent;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Models\SupportMessage;
-use Illuminate\Http\Request;
 use App\Models\User;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SupportMessageController extends Controller
 {
-   public function customerSendMessage(Request $request)
+    public function customerSendMessage(Request $request)
     {
         $request->validate([
             'receiver_id' => 'required|string',
-            'message' => 'required|string',
-            'type' => 'required|string',
+            'message'     => 'required|string',
+            'type'        => 'required|string',
         ]);
 
         if ($request->receiver_id === 'super-admin') {
@@ -26,7 +25,7 @@ class SupportMessageController extends Controller
                 $query->whereIn('name', ['Admin', 'Super Admin']);
             })->where('status', 1)->inRandomOrder()->first();
 
-            if (!$admins) {
+            if (! $admins) {
                 return response()->json(['error' => 'No eligible Admin or Super Admin found'], 404);
             }
 
@@ -36,10 +35,10 @@ class SupportMessageController extends Controller
         }
 
         $message = SupportMessage::create([
-            'sender_id' => Auth::id(),
+            'sender_id'   => Auth::id(),
             'receiver_id' => $receiverId,
-            'message' => $request->message,
-            'type' => $request->type,
+            'message'     => $request->message,
+            'type'        => $request->type,
         ]);
 
         // Broadcast the message to the receiver

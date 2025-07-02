@@ -16,11 +16,11 @@ class FileHandlerService
     // Save file with random name
     public function saveFileToStorage($file, $path)
     {
-        $fileName = $this->generateNameFile() . '.' . $file->getClientOriginalExtension();
+        $fileName   = $this->generateNameFile().'.'.$file->getClientOriginalExtension();
         $storedPath = $file->storeAs($path, $fileName, 'public');
 
         // Return full public URL
-        return asset('storage/' . $storedPath);
+        return asset('storage/'.$storedPath);
     }
 
     // Save file with a specific name
@@ -29,14 +29,14 @@ class FileHandlerService
         $storedPath = $file->storeAs($path, $fileName, 'public');
 
         // Return full public URL
-        return asset('storage/' . $storedPath);
+        return asset('storage/'.$storedPath);
     }
 
     // Delete file using its public URL
     public function deleteFileFromStorage($fileUrl)
     {
-        $publicUrlPrefix = config('app.url') . '/storage/';
-        $relativePath = str_replace($publicUrlPrefix, '', $fileUrl);
+        $publicUrlPrefix = config('app.url').'/storage/';
+        $relativePath    = str_replace($publicUrlPrefix, '', $fileUrl);
 
         if (Storage::disk('public')->exists($relativePath)) {
             return Storage::disk('public')->delete($relativePath);
@@ -66,11 +66,11 @@ class FileHandlerService
         $uploadedUrls = [];
 
         foreach ($files as $file) {
-            $extension = $file->getClientOriginalExtension();
-            $fileName = Str::uuid() . '.' . $extension;
+            $extension  = $file->getClientOriginalExtension();
+            $fileName   = Str::uuid().'.'.$extension;
             $storedPath = $file->storeAs("services/user_{$userId}", $fileName, 'public');
 
-            $uploadedUrls[] = asset('storage/' . $storedPath);
+            $uploadedUrls[] = asset('storage/'.$storedPath);
         }
 
         return $uploadedUrls;

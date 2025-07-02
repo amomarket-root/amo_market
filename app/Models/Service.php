@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class Service extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
+
     protected $table = 'services';
 
     protected $fillable = [
@@ -26,8 +27,8 @@ class Service extends ActiveModel
     ];
 
     protected $casts = [
-        'options' => 'array',
-        'file_paths' => 'array'
+        'options'    => 'array',
+        'file_paths' => 'array',
     ];
 
     public function shop()

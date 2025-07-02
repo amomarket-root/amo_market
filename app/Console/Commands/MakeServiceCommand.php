@@ -8,7 +8,9 @@ use Symfony\Component\Console\Input\InputArgument;
 class MakeServiceCommand extends GeneratorCommand
 {
     protected $name = 'make:service';
+
     protected $description = 'Create a new service class';
+
     protected $type = 'Service';
 
     protected function getStub()

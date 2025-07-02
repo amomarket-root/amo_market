@@ -22,30 +22,39 @@ class CategoryController extends Controller
      *     tags={"Categories"},
      *     summary="Get all categories for shops near user",
      *     description="Returns product categories for shops within a 2 km radius of the user's current location.",
+     *
      *     @OA\Parameter(
      *         name="latitude",
      *         in="query",
      *         required=true,
      *         description="Latitude of the user's location",
+     *
      *         @OA\Schema(type="number", format="float", example=12.9716)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="longitude",
      *         in="query",
      *         required=true,
      *         description="Longitude of the user's location",
+     *
      *         @OA\Schema(type="number", format="float", example=77.5946)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Categories retrieved successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Categories Retrieved Successfully."),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
+     *
      *                 @OA\Items(
+     *
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="name", type="string", example="Fruits & Vegetables"),
      *                     @OA\Property(property="shop_id", type="integer", example=11),
@@ -56,18 +65,24 @@ class CategoryController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Missing location data",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Current location not provided.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="No categories found",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="No categories found for shops within 3 km.")
      *         )
@@ -76,13 +91,13 @@ class CategoryController extends Controller
      */
     public function getAllCategories(Request $request)
     {
-        $latitude = $request->input('latitude');
+        $latitude  = $request->input('latitude');
         $longitude = $request->input('longitude');
 
         // If latitude and longitude are not provided, return all categories
-        if (!$latitude || !$longitude) {
+        if (! $latitude || ! $longitude) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Current location not provided.',
             ], 400);
         }
@@ -92,15 +107,15 @@ class CategoryController extends Controller
 
         if ($categories->isEmpty()) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'No categories found for shops within 3 km.',
             ], 404);
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Categories Retrieved Successfully.',
-            'data' => $categories,
+            'data'    => $categories,
         ], 200);
     }
 
@@ -111,30 +126,39 @@ class CategoryController extends Controller
      *     tags={"Services"},
      *     summary="Get all service categories for nearby shops",
      *     description="Returns service-based categories for shops within a 2 km radius of the user's current location.",
+     *
      *     @OA\Parameter(
      *         name="latitude",
      *         in="query",
      *         required=true,
      *         description="Latitude of the user's location",
+     *
      *         @OA\Schema(type="number", format="float", example=12.9716)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="longitude",
      *         in="query",
      *         required=true,
      *         description="Longitude of the user's location",
+     *
      *         @OA\Schema(type="number", format="float", example=77.5946)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Services retrieved successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Services Retrieved Successfully."),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
+     *
      *                 @OA\Items(
+     *
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="name", type="string", example="Haircut"),
      *                     @OA\Property(property="shop_id", type="integer", example=5),
@@ -146,18 +170,24 @@ class CategoryController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Missing location data",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Current location not provided.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="No services found",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="No services found for shops within 3 km.")
      *         )
@@ -166,13 +196,13 @@ class CategoryController extends Controller
      */
     public function getAllServices(Request $request)
     {
-        $latitude = $request->input('latitude');
+        $latitude  = $request->input('latitude');
         $longitude = $request->input('longitude');
 
         // If latitude and longitude are not provided, return all categories
-        if (!$latitude || !$longitude) {
+        if (! $latitude || ! $longitude) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Current location not provided.',
             ], 400);
         }
@@ -182,15 +212,15 @@ class CategoryController extends Controller
 
         if ($categories->isEmpty()) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'No services found for shops within 3 km.',
             ], 404);
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Services Retrieved Successfully.',
-            'data' => $categories,
+            'data'    => $categories,
         ], 200);
     }
 }

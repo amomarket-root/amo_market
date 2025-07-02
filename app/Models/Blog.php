@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class Blog extends ActiveModel
 {
     use HasUuids;
 
     protected $table = 'blogs';
+
     protected $primaryKey = 'id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $fillable = [
         'main_title',
         'category',
@@ -22,15 +25,15 @@ class Blog extends ActiveModel
         'multimedia',  // Either an image or video URL
         'header',
         'description',
-        'other_images' // Array of image URLs
+        'other_images', // Array of image URLs
     ];
 
     /**
      * Cast attributes to their respective data types.
      */
     protected $casts = [
-        'date' => 'date',
-        'multimedia' => 'json',
+        'date'         => 'date',
+        'multimedia'   => 'json',
         'other_images' => 'json',
     ];
 }

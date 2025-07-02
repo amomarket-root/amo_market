@@ -17,17 +17,17 @@ class UserCartService
     {
         // Create a new UserCart instance
         $userCart = new UserCart([
-            'user_id' => $cartData['user_id'],
-            'cart_items' => $cartData['cart_items'],
-            'delivery_charge' => $cartData['delivery_charge'] ?? 0,
-            'platform_charge' => $cartData['platform_charge'] ?? 0,
-            'feeding_india_donation' => $cartData['feeding_india_donation'] ?? false,
+            'user_id'                        => $cartData['user_id'],
+            'cart_items'                     => $cartData['cart_items'],
+            'delivery_charge'                => $cartData['delivery_charge']                ?? 0,
+            'platform_charge'                => $cartData['platform_charge']                ?? 0,
+            'feeding_india_donation'         => $cartData['feeding_india_donation']         ?? false,
             'india_armed_force_contribution' => $cartData['india_armed_force_contribution'] ?? false,
-            'tip_amount' => $cartData['tip_amount'] ?? null,
-            'subtotal' => $cartData['subtotal'] ?? 0,
-            'grand_total' => $cartData['grand_total'] ?? 0,
-            'status' => $cartData['status'],
-            'address_id' => $cartData['address_id'] ?? null, // Save address_id
+            'tip_amount'                     => $cartData['tip_amount']                     ?? null,
+            'subtotal'                       => $cartData['subtotal']                       ?? 0,
+            'grand_total'                    => $cartData['grand_total']                    ?? 0,
+            'status'                         => $cartData['status'],
+            'address_id'                     => $cartData['address_id'] ?? null, // Save address_id
         ]);
 
         // Save the cart to the database
@@ -43,16 +43,16 @@ class UserCartService
 
         // Update the cart data
         $userCart->update([
-            'cart_items' => $cartData['cart_items'],
-            'delivery_charge' => $cartData['delivery_charge'] ?? 0,
-            'platform_charge' => $cartData['platform_charge'] ?? 0,
-            'feeding_india_donation' => $cartData['feeding_india_donation'] ?? false,
+            'cart_items'                     => $cartData['cart_items'],
+            'delivery_charge'                => $cartData['delivery_charge']                ?? 0,
+            'platform_charge'                => $cartData['platform_charge']                ?? 0,
+            'feeding_india_donation'         => $cartData['feeding_india_donation']         ?? false,
             'india_armed_force_contribution' => $cartData['india_armed_force_contribution'] ?? false,
-            'tip_amount' => $cartData['tip_amount'] ?? null,
-            'subtotal' => $cartData['subtotal'] ?? 0,
-            'grand_total' => $cartData['grand_total'] ?? 0,
-            'status' => $cartData['status'],
-            'address_id' => $cartData['address_id'] ?? null, // Update address_id
+            'tip_amount'                     => $cartData['tip_amount']                     ?? null,
+            'subtotal'                       => $cartData['subtotal']                       ?? 0,
+            'grand_total'                    => $cartData['grand_total']                    ?? 0,
+            'status'                         => $cartData['status'],
+            'address_id'                     => $cartData['address_id'] ?? null, // Update address_id
         ]);
 
         return $userCart;
@@ -61,8 +61,8 @@ class UserCartService
     /**
      * Update the address in the user's cart.
      *
-     * @param int $userId
-     * @param int $addressId
+     * @param  int  $userId
+     * @param  int  $addressId
      * @return bool
      */
     public function updateAddress($userId, $addressId)
@@ -82,7 +82,8 @@ class UserCartService
             return false;
         } catch (\Exception $e) {
             // Log the error (optional)
-            Log::error('Error updating address in cart: ' . $e->getMessage());
+            Log::error('Error updating address in cart: '.$e->getMessage());
+
             return false;
         }
     }

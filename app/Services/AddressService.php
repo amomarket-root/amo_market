@@ -11,13 +11,14 @@ class AddressService
      * Get all addresses for the authenticated user.
      *
      * @return \Illuminate\Database\Eloquent\Collection
+     *
      * @throws \Exception
      */
     public function getUserAddresses()
     {
         // Ensure the user is authenticated
         $userId = Auth::id();
-        if (!$userId) {
+        if (! $userId) {
             throw new \Exception('User not authenticated');
         }
 
@@ -28,15 +29,15 @@ class AddressService
     /**
      * Store a new address for the authenticated user.
      *
-     * @param array $addressData
      * @return Address
+     *
      * @throws \Exception
      */
     public function storeAddress(array $addressData)
     {
         // Ensure the user is authenticated
         $userId = Auth::id();
-        if (!$userId) {
+        if (! $userId) {
             throw new \Exception('User not authenticated');
         }
 
@@ -55,15 +56,16 @@ class AddressService
     /**
      * Get a specific address by ID for the authenticated user.
      *
-     * @param int $addressId
+     * @param  int  $addressId
      * @return Address
+     *
      * @throws \Exception
      */
     public function getAddressById(string $addressId)
     {
         // Ensure the user is authenticated
         $userId = Auth::id();
-        if (!$userId) {
+        if (! $userId) {
             throw new \Exception('User not authenticated');
         }
 
@@ -72,7 +74,7 @@ class AddressService
             ->where('user_id', $userId)
             ->first();
 
-        if (!$address) {
+        if (! $address) {
             throw new \Exception('Address not found');
         }
 
@@ -82,8 +84,9 @@ class AddressService
     /**
      * Delete an existing address.
      *
-     * @param int $addressId
+     * @param  int  $addressId
      * @return bool
+     *
      * @throws \Exception
      */
     public function deleteAddress(string $addressId)
@@ -91,7 +94,7 @@ class AddressService
         // Find the address by ID
         $address = Address::find($addressId);
 
-        if (!$address) {
+        if (! $address) {
             throw new \Exception('Address not found');
         }
 
@@ -110,9 +113,6 @@ class AddressService
     /**
      * Update an existing address
      *
-     * @param string $addressId
-     * @param array $addressData
-     * @return \App\Models\Address
      * @throws \Exception
      */
     public function updateAddress(string $addressId, array $addressData): Address
@@ -120,7 +120,7 @@ class AddressService
         // Find the address by ID
         $address = Address::find($addressId);
 
-        if (!$address) {
+        if (! $address) {
             throw new \Exception('Address not found', 404);
         }
 

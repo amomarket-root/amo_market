@@ -12,8 +12,6 @@ class CompanyInformationController extends Controller
 
     /**
      * Constructor
-     *
-     * @param CompanyInformationService $companyInformationService
      */
     public function __construct(CompanyInformationService $companyInformationService)
     {
@@ -23,63 +21,70 @@ class CompanyInformationController extends Controller
     public function getAboutUs()
     {
         $aboutUs = $this->companyInformationService->getAllAboutUs();
+
         return response()->json([
             'success' => true,
-            'data' => $aboutUs
+            'data'    => $aboutUs,
         ]);
     }
 
     public function getPrivacyPolicy()
     {
         $privacyPolicy = $this->companyInformationService->getPrivacyPolicy();
+
         return response()->json([
             'success' => true,
-            'data' => $privacyPolicy
+            'data'    => $privacyPolicy,
         ]);
     }
 
     public function getCareers()
     {
         $careers = $this->companyInformationService->getCareers();
+
         return response()->json([
             'success' => true,
-            'data' => $careers
+            'data'    => $careers,
         ]);
     }
 
     public function getTerms()
     {
         $terms = $this->companyInformationService->getTerms();
+
         return response()->json([
             'success' => true,
-            'data' => $terms
+            'data'    => $terms,
         ]);
     }
 
     public function getSecurity()
     {
         $security = $this->companyInformationService->getSecurity();
+
         return response()->json([
             'success' => true,
-            'data' => $security
+            'data'    => $security,
         ]);
     }
 
     public function getShopPage()
     {
         $shopPage = $this->companyInformationService->getShopPage();
+
         return response()->json([
             'success' => true,
-            'data' => $shopPage
+            'data'    => $shopPage,
         ]);
     }
 
     public function getDeliveryPage()
     {
         $deliveryPage = $this->companyInformationService->getDeliveryPage();
+
         return response()->json([
             'success' => true,
-            'data' => $deliveryPage
+            'data'    => $deliveryPage,
         ]);
     }
 
@@ -90,19 +95,19 @@ class CompanyInformationController extends Controller
 
             if ($blogs->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'No Blogs Found.',
                 ], 404);
             }
 
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Blogs Retrieved Successfully.',
-                'data' => $blogs,
+                'data'    => $blogs,
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => $th->getMessage(),
             ], 500);
         }
@@ -112,24 +117,27 @@ class CompanyInformationController extends Controller
     {
         try {
             $blog = $this->companyInformationService->getBlogDetails($id);
+
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Blog Retrieved Successfully!',
-                'data' => $blog,
+                'data'    => $blog,
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => $th->getMessage(),
             ], 500);
         }
     }
+
     public function getContactUs()
     {
         $contactUs = $this->companyInformationService->getContactUs();
+
         return response()->json([
             'success' => true,
-            'data' => $contactUs
+            'data'    => $contactUs,
         ]);
     }
 }

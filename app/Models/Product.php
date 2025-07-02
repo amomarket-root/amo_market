@@ -3,16 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class Product extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $table = 'products'; // Table name
+
     protected $primaryKey = 'id';    // Primary key field
 
     protected $fillable = [
@@ -34,6 +35,7 @@ class Product extends ActiveModel
     {
         return $this->belongsTo(SubCategory::class);
     }
+
     public function product_information()
     {
         return $this->hasMany(ProductInformation::class);

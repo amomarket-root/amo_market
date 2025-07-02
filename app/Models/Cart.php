@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class Cart extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
+
     protected $fillable = [
         'user_id',
         'shop_id',
@@ -18,8 +19,9 @@ class Cart extends ActiveModel
         'service_id',
         'quantity',
         'price',
-        'status'
+        'status',
     ];
+
     protected $casts = [
         'price' => 'decimal:2',
     ];
@@ -33,6 +35,7 @@ class Cart extends ActiveModel
     {
         return $this->belongsTo(User::class);
     }
+
     public function shop()
     {
         return $this->belongsTo(Shop::class);

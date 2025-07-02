@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\ActiveModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class SupportMessage extends ActiveModel
@@ -15,9 +14,11 @@ class SupportMessage extends ActiveModel
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $table = 'support_messages'; // Table name
+
     protected $primaryKey = 'id';    // Primary key field
 
     protected $fillable = [

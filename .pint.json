@@ -1,0 +1,16 @@
+{
+  "preset": "laravel",
+  "exclude": [
+    "vendor",
+    "storage",
+    "node_modules",
+    "public",
+    "resources/js"
+  ],
+  "rules": {
+    "@PSR12": true,
+    "array_syntax": {
+      "syntax": "short"
+    }
+  }
+}

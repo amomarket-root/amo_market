@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class PrivacyPolicy extends ActiveModel
 {
     use HasUuids;
 
     protected $table = 'privacy_policies';
+
     protected $primaryKey = 'id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -20,11 +22,11 @@ class PrivacyPolicy extends ActiveModel
         'sections',
         'image_path',
         'company_description',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
-        'sections' => 'array',
-        'is_active' => 'boolean'
+        'sections'  => 'array',
+        'is_active' => 'boolean',
     ];
 }

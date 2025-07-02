@@ -10,7 +10,7 @@ class CategoryService
     public function getCategoriesByShopLocation($latitude, $longitude, $radius = 2)
     {
         // Create a unique cache key for this query
-        $cacheKey = "categories_nearby_" . md5("lat:$latitude|lng:$longitude|radius:$radius");
+        $cacheKey = 'categories_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");
 
         return Cache::remember($cacheKey, now()->addMinutes(20), function () use ($latitude, $longitude, $radius) {
             return Category::select([
@@ -18,20 +18,20 @@ class CategoryService
                 'categories.name',
                 'categories.shop_id',
                 'categories.content_image',
-                'categories.image'
+                'categories.image',
             ])
                 ->join('shops', 'shops.id', '=', 'categories.shop_id')
                 ->join('shop_types', 'shop_types.id', '=', 'shops.shop_type_id')
                 ->where('shop_types.has_services', false) // Only product-based shops
-                ->selectRaw("
+                ->selectRaw('
                 (6371 * acos(
                     cos(radians(?)) * cos(radians(shops.latitude))
                     * cos(radians(shops.longitude) - radians(?))
                     + sin(radians(?)) * sin(radians(shops.latitude))
                 )) AS distance
-            ", [$latitude, $longitude, $latitude])
-                ->having("distance", "<", $radius)
-                ->orderBy("distance", "asc")
+            ', [$latitude, $longitude, $latitude])
+                ->having('distance', '<', $radius)
+                ->orderBy('distance', 'asc')
                 ->limit(20)
                 ->get();
         });
@@ -40,7 +40,7 @@ class CategoryService
     public function getServicesByShopLocation($latitude, $longitude, $radius = 2)
     {
         // Create a unique cache key based on location and radius
-        $cacheKey = "services_nearby_" . md5("lat:$latitude|lng:$longitude|radius:$radius");
+        $cacheKey = 'services_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");
 
         return Cache::remember($cacheKey, now()->addMinutes(20), function () use ($latitude, $longitude, $radius) {
             $categories = Category::select([
@@ -49,24 +49,25 @@ class CategoryService
                 'categories.shop_id',
                 'categories.content_image',
                 'categories.image',
-                'shop_types.has_services'
+                'shop_types.has_services',
             ])
                 ->join('shops', 'shops.id', '=', 'categories.shop_id')
                 ->join('shop_types', 'shop_types.id', '=', 'shops.shop_type_id')
                 ->where('shop_types.has_services', true)
-                ->selectRaw("
+                ->selectRaw('
                 (6371 * acos(
                     cos(radians(?)) * cos(radians(shops.latitude))
                     * cos(radians(shops.longitude) - radians(?))
                     + sin(radians(?)) * sin(radians(shops.latitude))
                 )) AS distance
-            ", [$latitude, $longitude, $latitude])
-                ->having("distance", "<", $radius)
-                ->orderBy("distance", "asc")
+            ', [$latitude, $longitude, $latitude])
+                ->having('distance', '<', $radius)
+                ->orderBy('distance', 'asc')
                 ->get()
                 ->map(function ($item) {
                     $item->shop_type = $item->has_services ? 'service' : 'product';
                     unset($item->has_services);
+
                     return $item;
                 });
 

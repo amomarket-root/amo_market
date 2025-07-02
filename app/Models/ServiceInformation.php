@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class ServiceInformation extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
+
     protected $table = 'service_information';
 
     /**
@@ -31,7 +32,7 @@ class ServiceInformation extends ActiveModel
         'time_slots',
         'additional_options',
         'estimated_duration',
-        'is_active'
+        'is_active',
     ];
 
     /**
@@ -40,15 +41,15 @@ class ServiceInformation extends ActiveModel
      * @var array
      */
     protected $casts = [
-        'service_options' => 'array',
-        'type_options' => 'array',
-        'size_options' => 'array',
-        'location_options' => 'array',
-        'time_slots' => 'array',
+        'service_options'    => 'array',
+        'type_options'       => 'array',
+        'size_options'       => 'array',
+        'location_options'   => 'array',
+        'time_slots'         => 'array',
         'additional_options' => 'array',
-        'is_active' => 'boolean',
-        'base_price' => 'decimal:2',
-        'discounted_price' => 'decimal:2'
+        'is_active'          => 'boolean',
+        'base_price'         => 'decimal:2',
+        'discounted_price'   => 'decimal:2',
     ];
 
     /* -------------------------------- Relationships ------------------------------- */
@@ -80,7 +81,6 @@ class ServiceInformation extends ActiveModel
             'shop_id' // Local key on categories table (through sub_category)
         )->through('category');
     }
-
 
     /**
      * Get the category through the sub-category relationship
@@ -120,8 +120,8 @@ class ServiceInformation extends ActiveModel
     public function getFormattedOptionsAttribute()
     {
         $options = [
-            'time_slots' => $this->time_slots ?? [],
-            'location_prices' => $this->location_options ?? []
+            'time_slots'      => $this->time_slots       ?? [],
+            'location_prices' => $this->location_options ?? [],
         ];
 
         // Add service-type specific options
@@ -141,8 +141,8 @@ class ServiceInformation extends ActiveModel
             case 'AC':
                 return [
                     'service_prices' => $this->service_options ?? [],
-                    'ac_type_prices' => $this->type_options ?? [],
-                    'ac_ton_prices' => $this->size_options ?? []
+                    'ac_type_prices' => $this->type_options    ?? [],
+                    'ac_ton_prices'  => $this->size_options    ?? [],
                 ];
 
             case 'Beauty':
@@ -153,35 +153,35 @@ class ServiceInformation extends ActiveModel
 
             case 'HomeAppliance':
                 return [
-                    'service_prices' => $this->service_options ?? [],
-                    'appliance_prices' => $this->type_options ?? [],
-                    'size_prices' => $this->size_options ?? []
+                    'service_prices'   => $this->service_options ?? [],
+                    'appliance_prices' => $this->type_options    ?? [],
+                    'size_prices'      => $this->size_options    ?? [],
                 ];
 
             case 'MensSalon':
                 return [
-                    'service_prices' => $this->service_options ?? [],
-                    'hair_length_prices' => $this->additional_options['hair_lengths'] ?? []
+                    'service_prices'     => $this->service_options                    ?? [],
+                    'hair_length_prices' => $this->additional_options['hair_lengths'] ?? [],
                 ];
 
             case 'MobileRepair':
                 return [
                     'service_prices' => $this->service_options ?? [],
-                    'device_prices' => $this->type_options ?? []
+                    'device_prices'  => $this->type_options    ?? [],
                 ];
 
             case 'PrintStore':
                 return [
                     'color_prices' => $this->additional_options['color_options'] ?? [],
-                    'paper_sizes' => $this->additional_options['paper_sizes'] ?? [],
-                    'print_sides' => $this->additional_options['print_sides'] ?? [],
-                    'orientations' => $this->additional_options['orientations'] ?? []
+                    'paper_sizes'  => $this->additional_options['paper_sizes']   ?? [],
+                    'print_sides'  => $this->additional_options['print_sides']   ?? [],
+                    'orientations' => $this->additional_options['orientations']  ?? [],
                 ];
 
             case 'TVRepair':
                 return [
                     'service_prices' => $this->service_options ?? [],
-                    'size_prices' => $this->size_options ?? []
+                    'size_prices'    => $this->size_options    ?? [],
                 ];
 
             default:
@@ -196,7 +196,7 @@ class ServiceInformation extends ActiveModel
      */
     public function hasDiscount()
     {
-        return !is_null($this->discounted_price) && $this->discounted_price < $this->base_price;
+        return ! is_null($this->discounted_price) && $this->discounted_price < $this->base_price;
     }
 
     /**
@@ -205,14 +205,13 @@ class ServiceInformation extends ActiveModel
      * @return int|null
      */
     public function discountPercentage()
-{
-    if (!$this->hasDiscount()) {
-        return null;
+    {
+        if (! $this->hasDiscount()) {
+            return null;
+        }
+
+        return round(100 - (($this->discounted_price / $this->base_price) * 100));
     }
-
-    return round(100 - (($this->discounted_price / $this->base_price) * 100));
-}
-
 
     /* ----------------------------- Option Accessors ----------------------------- */
 

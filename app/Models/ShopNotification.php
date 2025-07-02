@@ -8,16 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class ShopNotification extends Model
 {
     use HasUuids;
+
     protected $table = 'shop_notifications';
+
     protected $primaryKey = 'id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
         'shop_id',
         'order_id',
         'total_amount',
-        'is_read'
+        'is_read',
     ];
 
     public function shop()

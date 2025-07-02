@@ -9,23 +9,23 @@ class UserLocationHistory extends Model
 {
     use HasFactory;
 
-    protected $table = "user_location_history";
+    protected $table = 'user_location_history';
+
     protected $fillable = [
         'ip_address',
         'latitude',
         'longitude',
         'state',
-        'city'
+        'city',
     ];
 
     protected $casts = [
-        'latitude' => 'float',
+        'latitude'  => 'float',
         'longitude' => 'float',
     ];
 
     protected $hidden = [
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
-
 }

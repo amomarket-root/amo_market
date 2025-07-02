@@ -3,22 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
-
 
 class DeliveryNotification extends ActiveModel
 {
     use HasUuids;
+
     protected $table = 'delivery_notifications';
+
     protected $primaryKey = 'id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
         'delivery_person_id',
         'order_id',
         'total_amount',
-        'is_read'
+        'is_read',
     ];
 
     public function deliveryPerson()

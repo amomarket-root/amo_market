@@ -4,16 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Notifications\Notifiable;
-use App\Models\ActiveModel;
 
 class DeliveryPerson extends ActiveModel
 {
-
-    use HasUuids, Notifiable;
+    use HasUuids;
+    use Notifiable;
 
     protected $table = 'delivery_persons';
+
     protected $primaryKey = 'id';
+
     public $incrementing = false; // Since 'id' is a UUID
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -41,6 +43,7 @@ class DeliveryPerson extends ActiveModel
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
+
     public function orderFeedbacks()
     {
         return $this->hasMany(OrderFeedback::class);

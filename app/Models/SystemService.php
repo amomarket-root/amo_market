@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 use Illuminate\Support\Str;
 
 class SystemService extends ActiveModel
@@ -11,17 +10,19 @@ class SystemService extends ActiveModel
     use HasUuids;
 
     protected $table = 'system_services';
-    protected $primaryKey = 'id';
-    protected $keyType = 'string';
-    public $incrementing = false;
 
+    protected $primaryKey = 'id';
+
+    protected $keyType = 'string';
+
+    public $incrementing = false;
 
     protected $fillable = [
         'name',
         'slug',
         'charge',
         'is_active',
-        'description'
+        'description',
     ];
 
     protected static function boot()
@@ -39,8 +40,8 @@ class SystemService extends ActiveModel
     public static function getCharge($slug, $default = 0)
     {
         $service = self::where('slug', $slug)
-                      ->where('is_active', true)
-                      ->first();
+            ->where('is_active', true)
+            ->first();
 
         return $service ? $service->charge : $default;
     }

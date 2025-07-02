@@ -82,7 +82,7 @@ class CompanyInformationService
         return Cache::remember($cacheKey, $this->cacheTTL, function () use ($category, $pageSize) {
             $query = Blog::query();
 
-            if (!empty($category) && $category !== 'all') {
+            if (! empty($category) && $category !== 'all') {
                 $query->where('category', $category);
             }
 

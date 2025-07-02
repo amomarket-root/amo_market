@@ -8,14 +8,15 @@ use Illuminate\Queue\SerializesModels;
 
 class DeliveryResetPasswordMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $token;
 
     /**
      * Create a new message instance.
      *
-     * @param string $token
+     * @param  string  $token
      */
     public function __construct($token)
     {
@@ -32,7 +33,7 @@ class DeliveryResetPasswordMail extends Mailable
         return $this->subject('Reset Your Password')
             ->view('emails.reset_password')
             ->with([
-                'token' => $this->token,
+                'token'     => $this->token,
                 'reset_url' => $this->generateResetUrl($this->token),
             ]);
     }
@@ -40,11 +41,11 @@ class DeliveryResetPasswordMail extends Mailable
     /**
      * Generate the reset password URL.
      *
-     * @param string $token
+     * @param  string  $token
      * @return string
      */
     private function generateResetUrl($token)
     {
-        return config('app.url') . '/delivery/reset_password?token=' . $token;
+        return config('app.url').'/delivery/reset_password?token='.$token;
     }
 }

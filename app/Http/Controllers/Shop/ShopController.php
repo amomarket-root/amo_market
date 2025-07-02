@@ -22,36 +22,45 @@ class ShopController extends Controller
      *     tags={"Shop"},
      *     summary="Get nearby shops within a 2km radius",
      *     description="Returns a list of nearby shops based on the user's current latitude and longitude.",
+     *
      *     @OA\Parameter(
      *         name="latitude",
      *         in="query",
      *         required=true,
      *         description="Latitude of the current location",
+     *
      *         @OA\Schema(
      *             type="number",
      *             format="float"
      *         )
      *     ),
+     *
      *     @OA\Parameter(
      *         name="longitude",
      *         in="query",
      *         required=true,
      *         description="Longitude of the current location",
+     *
      *         @OA\Schema(
      *             type="number",
      *             format="float"
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Shops retrieved successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Shops Retrieved Successfully."),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
+     *
      *                 @OA\Items(
+     *
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="user_id", type="integer", example=101),
      *                     @OA\Property(property="name", type="string", example="Fresh Mart"),
@@ -72,18 +81,24 @@ class ShopController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Missing latitude or longitude",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Current location not provided.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="No shops found",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="No shops found within 2 km.")
      *         )
@@ -92,13 +107,13 @@ class ShopController extends Controller
      */
     public function getAllShops(Request $request)
     {
-        $latitude = $request->input('latitude');
+        $latitude  = $request->input('latitude');
         $longitude = $request->input('longitude');
 
         // If latitude and longitude are not provided, return all shops
-        if (!$latitude || !$longitude) {
+        if (! $latitude || ! $longitude) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Current location not provided.',
             ], 400);
         }
@@ -107,15 +122,15 @@ class ShopController extends Controller
 
         if ($shops->isEmpty()) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'No shops found within 2 km.',
             ], 404);
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Shops Retrieved Successfully.',
-            'data' => $shops,
+            'data'    => $shops,
         ], 200);
     }
 
@@ -126,30 +141,39 @@ class ShopController extends Controller
      *     tags={"Shop"},
      *     summary="Get all nearby shops within a 2km radius (no limit)",
      *     description="Returns all shops within a 2km radius based on the user's current location (latitude and longitude).",
+     *
      *     @OA\Parameter(
      *         name="latitude",
      *         in="query",
      *         required=true,
      *         description="Latitude of the user's current location",
+     *
      *         @OA\Schema(type="number", format="float", example=12.9716)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="longitude",
      *         in="query",
      *         required=true,
      *         description="Longitude of the user's current location",
+     *
      *         @OA\Schema(type="number", format="float", example=77.5946)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Shops retrieved successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Shops Retrieved Successfully."),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
+     *
      *                 @OA\Items(
+     *
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="user_id", type="integer", example=101),
      *                     @OA\Property(property="name", type="string", example="Fresh Mart"),
@@ -170,18 +194,24 @@ class ShopController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Missing location data",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Current location not provided.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="No shops found within 2 km",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="No shops found within 2 km.")
      *         )
@@ -190,13 +220,13 @@ class ShopController extends Controller
      */
     public function getSeeAllShops(Request $request)
     {
-        $latitude = $request->input('latitude');
+        $latitude  = $request->input('latitude');
         $longitude = $request->input('longitude');
 
         // If latitude and longitude are not provided, return all shops
-        if (!$latitude || !$longitude) {
+        if (! $latitude || ! $longitude) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Current location not provided.',
             ], 400);
         }
@@ -205,15 +235,15 @@ class ShopController extends Controller
 
         if ($shops->isEmpty()) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'No shops found within 2 km.',
             ], 404);
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Shops Retrieved Successfully.',
-            'data' => $shops,
+            'data'    => $shops,
         ], 200);
     }
 
@@ -227,8 +257,10 @@ class ShopController extends Controller
      *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"latitude", "longitude", "shop_id"},
+     *
      *             @OA\Property(property="latitude", type="number", format="float", example=12.9716),
      *             @OA\Property(property="longitude", type="number", format="float", example=77.5946),
      *             @OA\Property(property="shop_id", type="integer", example=5),
@@ -240,7 +272,9 @@ class ShopController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Products or services retrieved successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Products retrieved successfully."),
      *             @OA\Property(property="type", type="string", enum={"product", "service"}, example="product"),
@@ -250,7 +284,9 @@ class ShopController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
+     *
      *                 @OA\Items(
+     *
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="sub_category_id", type="integer", example=10),
      *                     @OA\Property(property="name", type="string", example="Mango 1kg"),
@@ -269,7 +305,9 @@ class ShopController extends Controller
      *     @OA\Response(
      *         response=400,
      *         description="Latitude or Longitude not provided",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Current location not provided.")
      *         )
@@ -278,7 +316,9 @@ class ShopController extends Controller
      *     @OA\Response(
      *         response=404,
      *         description="Shop not found or no products found",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="No products found in the radius.")
      *         )
@@ -287,7 +327,9 @@ class ShopController extends Controller
      *     @OA\Response(
      *         response=500,
      *         description="Internal server error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Server error message.")
      *         )
@@ -297,12 +339,12 @@ class ShopController extends Controller
     public function getAllProductByShopId(Request $request)
     {
         try {
-            $latitude = $request->input('latitude');
+            $latitude  = $request->input('latitude');
             $longitude = $request->input('longitude');
 
-            if (!$latitude || !$longitude) {
+            if (! $latitude || ! $longitude) {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'Current location not provided.',
                 ], 400);
             }
@@ -311,41 +353,41 @@ class ShopController extends Controller
 
             if ($result['type'] === 'error') {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => $result['message'],
                 ], 404);
             }
 
             if ($result['type'] === 'service') {
                 return response()->json([
-                    'status' => true,
-                    'message' => 'This shop provides services. Please contact them directly.',
-                    'type' => 'service',
-                    'shop_id' => $result['shop_id'],
+                    'status'    => true,
+                    'message'   => 'This shop provides services. Please contact them directly.',
+                    'type'      => 'service',
+                    'shop_id'   => $result['shop_id'],
                     'shop_name' => $result['shop_name'],
                     'shop_type' => $result['shop_type'],
-                    'data' => $result['data']
+                    'data'      => $result['data'],
                 ], 200);
             }
 
             if (empty($result['data'])) {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'No products found in the radius.',
                 ], 404);
             }
 
             return response()->json([
-                'status' => true,
-                'message' => 'Products retrieved successfully.',
-                'type' => 'product',
-                'shop_id' => $result['shop_id'],
+                'status'    => true,
+                'message'   => 'Products retrieved successfully.',
+                'type'      => 'product',
+                'shop_id'   => $result['shop_id'],
                 'shop_name' => $result['shop_name'],
-                'data' => $result['data']
+                'data'      => $result['data'],
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => $th->getMessage(),
             ], 500);
         }

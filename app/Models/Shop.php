@@ -3,17 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class Shop extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $table = 'shops'; // Table name
+
     protected $primaryKey = 'id';    // Primary key field
+
     protected $fillable = [
         'user_id',
         'shop_document_id',
@@ -66,11 +68,13 @@ class Shop extends ActiveModel
     {
         return $this->hasMany(OrderFeedback::class);
     }
+
     public function updateRating()
     {
         $this->rating = $this->orderFeedbacks()->avg('shop_rating');
         $this->save();
     }
+
     public function shopType()
     {
         return $this->belongsTo(ShopType::class, 'shop_type_id');

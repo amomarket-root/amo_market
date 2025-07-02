@@ -3,14 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class UserCart extends ActiveModel
 {
-
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -28,29 +27,30 @@ class UserCart extends ActiveModel
     ];
 
     protected $casts = [
-        'cart_items' => 'array',
-        'delivery_charge' => 'decimal:2',
-        'platform_charge' => 'decimal:2',
-        'tip_amount' => 'decimal:2',
-        'subtotal' => 'decimal:2',
-        'grand_total' => 'decimal:2',
-        'feeding_india_donation' => 'boolean',
+        'cart_items'                     => 'array',
+        'delivery_charge'                => 'decimal:2',
+        'platform_charge'                => 'decimal:2',
+        'tip_amount'                     => 'decimal:2',
+        'subtotal'                       => 'decimal:2',
+        'grand_total'                    => 'decimal:2',
+        'feeding_india_donation'         => 'boolean',
         'india_armed_force_contribution' => 'boolean',
     ];
-
 
     // Relationship to User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-     /**
+
+    /**
      * Get the address associated with the user cart.
      */
     public function address()
     {
         return $this->belongsTo(Address::class, 'address_id');
     }
+
     public function orders()
     {
         return $this->hasMany(Order::class);

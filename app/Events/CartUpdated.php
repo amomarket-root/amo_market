@@ -10,20 +10,22 @@ use Illuminate\Queue\SerializesModels;
 
 class CartUpdated implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     /**
      * Create a new event instance.
      */
     public $userId;
+
     public $cartSummary;
 
     public function __construct($userId, $cartSummary)
     {
-        $this->userId = $userId;
+        $this->userId      = $userId;
         $this->cartSummary = $cartSummary;
     }
-
 
     /**
      * Get the channels the event should broadcast on.
@@ -32,7 +34,7 @@ class CartUpdated implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new Channel('cart_update.' . $this->userId);
+        return new Channel('cart_update.'.$this->userId);
     }
 
     /**
@@ -44,5 +46,4 @@ class CartUpdated implements ShouldBroadcastNow
     {
         return 'cart.update';
     }
-
 }

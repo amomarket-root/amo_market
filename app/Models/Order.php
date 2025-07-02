@@ -3,19 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class Order extends ActiveModel
 {
-
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $table = 'orders'; // Table name
-    protected $primaryKey = 'id';    // Primary key field
 
+    protected $primaryKey = 'id';    // Primary key field
 
     protected $fillable = [
         'order_id',
@@ -28,11 +27,11 @@ class Order extends ActiveModel
         'payment_method',
         'payment_id',
         'payment_status',
-        'estimated_delivery'
+        'estimated_delivery',
     ];
 
     protected $casts = [
-        'total_amount' => 'decimal:2',
+        'total_amount'       => 'decimal:2',
         'estimated_delivery' => 'datetime',
     ];
 
@@ -60,8 +59,7 @@ class Order extends ActiveModel
     public function shops()
     {
         return $this->belongsToMany(Shop::class, 'order_shop')
-                    ->withPivot('status', 'notes', 'status_changed_at', 'status_changed_by')
-                    ->withTimestamps();
+            ->withPivot('status', 'notes', 'status_changed_at', 'status_changed_by')
+            ->withTimestamps();
     }
-
 }

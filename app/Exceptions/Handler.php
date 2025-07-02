@@ -2,19 +2,18 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -47,11 +46,11 @@ class Handler extends ExceptionHandler
     {
         $context = [
             'exception' => get_class($e),
-            'message' => $e->getMessage(),
-            'code' => $e->getCode(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString(),
+            'message'   => $e->getMessage(),
+            'code'      => $e->getCode(),
+            'file'      => $e->getFile(),
+            'line'      => $e->getLine(),
+            'trace'     => $e->getTraceAsString(),
         ];
 
         if ($e instanceof CustomException) {
@@ -59,7 +58,7 @@ class Handler extends ExceptionHandler
             Log::channel('exceptions')->warning('Custom Exception', $context);
         } else {
             Log::channel('exceptions')->error(
-                'Unhandled ' . class_basename($e),
+                'Unhandled '.class_basename($e),
                 $context
             );
         }
@@ -86,15 +85,15 @@ class Handler extends ExceptionHandler
         $exception = $this->prepareException($exception);
 
         return match (true) {
-            $exception instanceof CustomException => $this->customExceptionResponse($exception),
-            $exception instanceof AuthenticationException => $this->unauthenticatedResponse($exception),
-            $exception instanceof ValidationException => $this->validationResponse($exception),
-            $exception instanceof ModelNotFoundException => $this->modelNotFoundResponse($exception),
-            $exception instanceof NotFoundHttpException => $this->notFoundResponse($exception),
+            $exception instanceof CustomException               => $this->customExceptionResponse($exception),
+            $exception instanceof AuthenticationException       => $this->unauthenticatedResponse($exception),
+            $exception instanceof ValidationException           => $this->validationResponse($exception),
+            $exception instanceof ModelNotFoundException        => $this->modelNotFoundResponse($exception),
+            $exception instanceof NotFoundHttpException         => $this->notFoundResponse($exception),
             $exception instanceof MethodNotAllowedHttpException => $this->methodNotAllowedResponse($exception),
-            $exception instanceof ThrottleRequestsException => $this->throttleResponse($exception),
-            $exception instanceof AuthorizationException => $this->forbiddenResponse($exception),
-            default => $this->genericExceptionResponse($exception),
+            $exception instanceof ThrottleRequestsException     => $this->throttleResponse($exception),
+            $exception instanceof AuthorizationException        => $this->forbiddenResponse($exception),
+            default                                             => $this->genericExceptionResponse($exception),
         };
     }
 
@@ -104,10 +103,10 @@ class Handler extends ExceptionHandler
     protected function customExceptionResponse(CustomException $exception): JsonResponse
     {
         return response()->json([
-            'success' => false,
-            'message' => $exception->getMessage(),
+            'success'  => false,
+            'message'  => $exception->getMessage(),
             'error_id' => uniqid(),
-            'errors' => $exception->getDetails(),
+            'errors'   => $exception->getDetails(),
         ], $exception->getStatusCode());
     }
 
@@ -117,10 +116,10 @@ class Handler extends ExceptionHandler
     protected function unauthenticatedResponse(AuthenticationException $exception): JsonResponse
     {
         return response()->json([
-            'success' => false,
-            'message' => $exception->getMessage() ?: 'Unauthenticated.',
+            'success'  => false,
+            'message'  => $exception->getMessage() ?: 'Unauthenticated.',
             'error_id' => uniqid(),
-            'errors' => [],
+            'errors'   => [],
         ], Response::HTTP_UNAUTHORIZED);
     }
 
@@ -130,15 +129,15 @@ class Handler extends ExceptionHandler
     protected function validationResponse(ValidationException $exception): JsonResponse
     {
         $response = [
-            'success' => false,
-            'message' => 'Validation failed',
+            'success'  => false,
+            'message'  => 'Validation failed',
             'error_id' => uniqid(),
-            'errors' => $exception->errors(),
+            'errors'   => $exception->errors(),
         ];
 
         if (config('app.debug')) {
             $response['failed_rules'] = collect($exception->validator->failed())
-                ->map(function($rules) {
+                ->map(function ($rules) {
                     return array_keys($rules);
                 });
         }
@@ -152,11 +151,12 @@ class Handler extends ExceptionHandler
     protected function modelNotFoundResponse(ModelNotFoundException $exception): JsonResponse
     {
         $model = class_basename($exception->getModel());
+
         return response()->json([
-            'success' => false,
-            'message' => "{$model} not found",
+            'success'  => false,
+            'message'  => "{$model} not found",
             'error_id' => uniqid(),
-            'errors' => [],
+            'errors'   => [],
         ], Response::HTTP_NOT_FOUND);
     }
 
@@ -166,10 +166,10 @@ class Handler extends ExceptionHandler
     protected function notFoundResponse(NotFoundHttpException $exception): JsonResponse
     {
         return response()->json([
-            'success' => false,
-            'message' => 'The requested resource was not found',
+            'success'  => false,
+            'message'  => 'The requested resource was not found',
             'error_id' => uniqid(),
-            'errors' => [],
+            'errors'   => [],
         ], Response::HTTP_NOT_FOUND);
     }
 
@@ -179,10 +179,10 @@ class Handler extends ExceptionHandler
     protected function methodNotAllowedResponse(MethodNotAllowedHttpException $exception): JsonResponse
     {
         return response()->json([
-            'success' => false,
-            'message' => 'The requested method is not allowed for this resource',
+            'success'  => false,
+            'message'  => 'The requested method is not allowed for this resource',
             'error_id' => uniqid(),
-            'errors' => [],
+            'errors'   => [],
         ], Response::HTTP_METHOD_NOT_ALLOWED);
     }
 
@@ -192,11 +192,11 @@ class Handler extends ExceptionHandler
     protected function throttleResponse(ThrottleRequestsException $exception): JsonResponse
     {
         return response()->json([
-            'success' => false,
-            'message' => 'Too many requests',
+            'success'  => false,
+            'message'  => 'Too many requests',
             'error_id' => uniqid(),
-            'errors' => [
-                'retry_after' => $exception->getHeaders()['Retry-After'] ?? null
+            'errors'   => [
+                'retry_after' => $exception->getHeaders()['Retry-After'] ?? null,
             ],
         ], Response::HTTP_TOO_MANY_REQUESTS);
     }
@@ -207,10 +207,10 @@ class Handler extends ExceptionHandler
     protected function forbiddenResponse(AuthorizationException $exception): JsonResponse
     {
         return response()->json([
-            'success' => false,
-            'message' => $exception->getMessage() ?: 'Forbidden',
+            'success'  => false,
+            'message'  => $exception->getMessage() ?: 'Forbidden',
             'error_id' => uniqid(),
-            'errors' => [],
+            'errors'   => [],
         ], Response::HTTP_FORBIDDEN);
     }
 
@@ -220,12 +220,12 @@ class Handler extends ExceptionHandler
     protected function genericExceptionResponse(Throwable $exception): JsonResponse
     {
         $statusCode = $this->getExceptionStatusCode($exception);
-        $response = $this->generateBaseResponse($exception);
+        $response   = $this->generateBaseResponse($exception);
 
         if (config('app.debug')) {
             $response = array_merge($response, [
                 'message' => $exception->getMessage(),
-                'debug' => $this->getSafeDebugInfo($exception),
+                'debug'   => $this->getSafeDebugInfo($exception),
             ]);
         }
 
@@ -280,10 +280,10 @@ class Handler extends ExceptionHandler
     protected function generateBaseResponse(Throwable $exception): array
     {
         return [
-            'success' => false,
-            'message' => 'Server Error',
+            'success'  => false,
+            'message'  => 'Server Error',
             'error_id' => uniqid(),
-            'errors' => [],
+            'errors'   => [],
         ];
     }
 
@@ -294,16 +294,16 @@ class Handler extends ExceptionHandler
     {
         return [
             'exception' => get_class($exception),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'trace' => array_map(function($trace) {
+            'file'      => $exception->getFile(),
+            'line'      => $exception->getLine(),
+            'trace'     => array_map(function ($trace) {
                 return [
-                    'file' => $trace['file'] ?? null,
-                    'line' => $trace['line'] ?? null,
+                    'file'     => $trace['file']     ?? null,
+                    'line'     => $trace['line']     ?? null,
                     'function' => $trace['function'] ?? null,
-                    'class' => $trace['class'] ?? null,
+                    'class'    => $trace['class']    ?? null,
                 ];
-            }, $exception->getTrace())
+            }, $exception->getTrace()),
         ];
     }
 }

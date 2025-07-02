@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\AuthModel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class User extends AuthModel
@@ -15,10 +14,13 @@ class User extends AuthModel
     use HasUuids;
 
     protected $keyType = 'string'; // Use string for UUIDs
+
     public $incrementing = false; // Disable auto-incrementing
 
     protected $table = 'users'; // Table name
+
     protected $primaryKey = 'id';    // Primary key field
+
     /**
      * The attributes that are mass assignable.
      *
@@ -38,7 +40,7 @@ class User extends AuthModel
         'otp_expiry',
         'login_time',
         'logout_time',
-        'has_entered_details'
+        'has_entered_details',
     ];
 
     /**
@@ -60,7 +62,7 @@ class User extends AuthModel
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
@@ -68,10 +70,12 @@ class User extends AuthModel
     {
         return $this->belongsTo(Avatar::class);
     }
+
     public function role()
     {
         return $this->belongsTo(Role::class);
     }
+
     /**
      * Get the shop associated with the user.
      */

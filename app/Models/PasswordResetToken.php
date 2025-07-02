@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PasswordResetToken extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuids;
 
     protected $fillable = [
         'email',
@@ -16,5 +17,6 @@ class PasswordResetToken extends Model
     ];
 
     protected $keyType = 'string'; // Use string for UUIDs
+
     public $incrementing = false; // Disable auto-incrementing
 }

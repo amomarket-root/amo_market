@@ -8,7 +8,8 @@ use Illuminate\Queue\SerializesModels;
 
 class PasswordResetSuccessMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $user;
 
@@ -26,6 +27,6 @@ class PasswordResetSuccessMail extends Mailable
     public function build()
     {
         return $this->subject('Password Reset Successful')
-                    ->view('emails.password_reset_success');
+            ->view('emails.password_reset_success');
     }
 }

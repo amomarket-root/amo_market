@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\ActiveModel;
 
 class DeliveryPersonOrder extends ActiveModel
 {
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     /**
@@ -42,8 +42,8 @@ class DeliveryPersonOrder extends ActiveModel
      */
     protected $casts = [
         'payment_status' => 'string',
-        'status' => 'string',
-        'total_amount' => 'decimal:2',
+        'status'         => 'string',
+        'total_amount'   => 'decimal:2',
     ];
 
     /**

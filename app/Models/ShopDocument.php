@@ -4,18 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\ActiveModel;
 
 class ShopDocument extends ActiveModel
 {
-    use SoftDeletes;
     use HasUuids;
+    use SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $table = 'shop_documents'; // Table name
+
     protected $primaryKey = 'id';    // Primary key field
+
     protected $fillable = [
         'shop_id',
         'PAN_Number',

@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Category;
-use App\Models\Shop;
 use App\Models\Product;
+use App\Models\Shop;
 use Illuminate\Support\Facades\Cache;
 
 class ProductService
@@ -12,20 +12,20 @@ class ProductService
     public function getAllProduct($latitude, $longitude, $radius = 2)
     {
         // Create a unique cache key for this query
-        $cacheKey = "products_nearby_" . md5("lat:$latitude|lng:$longitude|radius:$radius");
+        $cacheKey = 'products_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");
 
         return Cache::remember($cacheKey, now()->addMinutes(20), function () use ($latitude, $longitude, $radius) {
             // Fetch shops within the specified radius
-            $shops = Shop::selectRaw("id, name, latitude, longitude,
+            $shops = Shop::selectRaw('id, name, latitude, longitude,
             ( 6371 * acos( cos( radians(?) ) *
             cos( radians( latitude ) )
             * cos( radians( longitude ) - radians(?) )
             + sin( radians(?) ) *
             sin( radians( latitude ) ) ) )
-            AS distance", [$latitude, $longitude, $latitude])
+            AS distance', [$latitude, $longitude, $latitude])
                 ->where('online_status', 1)  // Only include shops that are online
-                ->having("distance", "<", $radius)
-                ->orderBy("distance", "asc")
+                ->having('distance', '<', $radius)
+                ->orderBy('distance', 'asc')
                 ->get();
 
             // Get the IDs of the shops within the radius
@@ -39,7 +39,7 @@ class ProductService
                 ->whereHas('sub_category.category', function ($query) use ($shopIds) {
                     $query->whereIn('shop_id', $shopIds);
                 })
-                ->orderBy("id", "asc")
+                ->orderBy('id', 'asc')
                 ->get();
 
             // Group the products by their category name
@@ -50,26 +50,26 @@ class ProductService
     public function getAllProductById($data)
     {
         $categoryId = $data['category_id'] ?? null;
-        $sortBy = $data['sort_by'] ?? 'Relevance';
-        $latitude = $data['latitude'] ?? null;
-        $longitude = $data['longitude'] ?? null;
-        $radius = $data['radius'] ?? 2;
+        $sortBy     = $data['sort_by']     ?? 'Relevance';
+        $latitude   = $data['latitude']    ?? null;
+        $longitude  = $data['longitude']   ?? null;
+        $radius     = $data['radius']      ?? 2;
 
         // Unique cache key
-        $cacheKey = 'products_' . md5("lat:$latitude|lng:$longitude|radius:$radius|category:$categoryId|sort:$sortBy");
+        $cacheKey = 'products_'.md5("lat:$latitude|lng:$longitude|radius:$radius|category:$categoryId|sort:$sortBy");
 
         // Cache for 20 minutes
         return Cache::remember($cacheKey, now()->addMinutes(20), function () use ($latitude, $longitude, $radius, $categoryId, $sortBy) {
-            $shops = Shop::selectRaw("id, name, latitude, longitude,
+            $shops = Shop::selectRaw('id, name, latitude, longitude,
         ( 6371 * acos( cos( radians(?) ) *
         cos( radians( latitude ) )
         * cos( radians( longitude ) - radians(?) )
         + sin( radians(?) ) *
         sin( radians( latitude ) ) ) )
-        AS distance", [$latitude, $longitude, $latitude])
+        AS distance', [$latitude, $longitude, $latitude])
                 ->where('online_status', 1)
-                ->having("distance", "<", $radius)
-                ->orderBy("distance", "asc")
+                ->having('distance', '<', $radius)
+                ->orderBy('distance', 'asc')
                 ->get();
 
             $shopIds = $shops->pluck('id')->toArray();
@@ -105,25 +105,25 @@ class ProductService
 
     public function getAllProductByGroup($data)
     {
-        $categoryId = $data['category_id'] ?? null;
+        $categoryId    = $data['category_id']    ?? null;
         $subcategoryId = $data['subcategory_id'] ?? null;
-        $sortBy = $data['sort_by'] ?? 'Relevance';
-        $latitude = $data['latitude'] ?? null;
-        $longitude = $data['longitude'] ?? null;
-        $radius = $data['radius'] ?? 2; // Default radius is 2 km
+        $sortBy        = $data['sort_by']        ?? 'Relevance';
+        $latitude      = $data['latitude']       ?? null;
+        $longitude     = $data['longitude']      ?? null;
+        $radius        = $data['radius']         ?? 2; // Default radius is 2 km
 
-        if (!$latitude || !$longitude) {
+        if (! $latitude || ! $longitude) {
             return response()->json(['error' => 'Latitude and longitude are required'], 400);
         }
 
         // Generate a unique Redis cache key
-        $cacheKey = 'grouped_products_' . md5(json_encode([
-            'category_id' => $categoryId,
+        $cacheKey = 'grouped_products_'.md5(json_encode([
+            'category_id'    => $categoryId,
             'subcategory_id' => $subcategoryId,
-            'sort_by' => $sortBy,
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-            'radius' => $radius
+            'sort_by'        => $sortBy,
+            'latitude'       => $latitude,
+            'longitude'      => $longitude,
+            'radius'         => $radius,
         ]));
 
         // Use Redis cache via Laravel's Cache::remember
@@ -145,15 +145,15 @@ class ProductService
                             $query->orderBy('discount', 'desc');
                             break;
                     }
-                }
+                },
             ])
                 ->whereHas('shop', function ($query) use ($latitude, $longitude, $radius) {
                     $query->selectRaw(
-                        "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance",
+                        '(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance',
                         [$latitude, $longitude, $latitude]
                     )
                         ->whereRaw(
-                            "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) <= ?",
+                            '(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) <= ?',
                             [$latitude, $longitude, $latitude, $radius]
                         );
                 });
@@ -166,16 +166,15 @@ class ProductService
         });
     }
 
-
     public function getProductDetailById($data)
     {
         $productId = $data['product_id'] ?? null;
 
-        if (!$productId) {
+        if (! $productId) {
             return null;
         }
 
-        $cacheKey = 'product_detail_' . $productId;
+        $cacheKey = 'product_detail_'.$productId;
 
         return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($productId) {
             return Product::with(['sub_category.category', 'product_information'])
