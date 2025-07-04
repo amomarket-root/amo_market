@@ -25,21 +25,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/portal/cashfree/success', [CashfreeController::class, 'paymentSuccess']);
 Route::post('/portal/cashfree/webhook', [CashfreeController::class, 'handleWebhook']);
 
+Route::get('/login/google', [PortalAuthenticateController::class, 'redirectToProvider']);
+Route::get('/login/google/callback', [PortalAuthenticateController::class, 'handleProviderCallback']);
+
 Route::prefix('portal/authenticate')->group(function () {
     // Authentication routes
-    Route::post('/login', [PortalAuthenticateController::class, 'login']);
-    Route::post('/register', [PortalAuthenticateController::class, 'register']);
-    Route::post('/forgot_password', [PortalAuthenticateController::class, 'forgotPassword']);
-    Route::post('/reset_password', [PortalAuthenticateController::class, 'resetPassword']);
     Route::post('/auth_mobile', [PortalAuthenticateController::class, 'authMobile']);
     Route::post('auth_mobile_check', [PortalAuthenticateController::class, 'authMobile']);
     Route::post('verify_Otp', [PortalAuthenticateController::class, 'verifyOtp']);
-
-    // Social authentication
-    Route::get('/google', [PortalAuthenticateController::class, 'googleLogin']);
-    Route::get('/google/callback', [PortalAuthenticateController::class, 'googleHandle']);
-    Route::get('/facebook', [PortalAuthenticateController::class, 'facebookLogin']);
-    Route::get('/facebook/callback', [PortalAuthenticateController::class, 'facebookHandle']);
 });
 
 /* ---------------------------------------------------------- */

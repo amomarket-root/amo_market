@@ -2,6 +2,8 @@ import React, { useEffect, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SweetAlertProvider } from './components/Theme/SweetAlert';
+import { SnackbarProvider } from './components/Theme/SnackbarAlert';
 import ReactGA from 'react-ga4';
 import './bootstrap';
 import '../css/app.css'; // Import the app.css file
@@ -14,6 +16,7 @@ import { LocationProvider } from './components/Location/LocationContext';
 
 // Lazy load only the PortalRoutes component
 const PortalRoutes = lazy(() => import('./components/Route/PortalRoutes'));
+const AuthCallback = lazy(() => import('./components/Auth/AuthCallback'));
 
 // Path to the loader image from the public folder
 const loaderGif = '/image/loader.gif'; // Assuming the loader.gif is in public/images folder
@@ -26,15 +29,20 @@ const App = () => {
 
     return (
         <QueryClientProvider client={queryClient}> {/* Wrap entire app */}
-            <Suspense fallback={
-                <div className="loader-container">
-                    <img src={loaderGif} alt="Loading..." className="loader" />
-                </div>
-            }>
-                <Routes>
-                    <Route path="/*" element={<LocationProvider><PortalRoutes /></LocationProvider>} />
-                </Routes>
-            </Suspense>
+            <SweetAlertProvider>
+                <SnackbarProvider>
+                    <Suspense fallback={
+                        <div className="loader-container">
+                            <img src={loaderGif} alt="Loading..." className="loader" />
+                        </div>
+                    }>
+                        <Routes>
+                            <Route path="/*" element={<LocationProvider><PortalRoutes /></LocationProvider>} />
+                            <Route path="/auth/callback" element={<LocationProvider><AuthCallback /></LocationProvider>} />
+                        </Routes>
+                    </Suspense>
+                </SnackbarProvider>
+            </SweetAlertProvider>
         </QueryClientProvider>
     );
 };

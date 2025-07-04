@@ -32,12 +32,17 @@ const LoginModal = ({ open, onClose }) => {
 
     const handleGoogleLogin = () => {
         try {
-            window.location.href = `${apiUrl}/portal/authenticate/google`;
+            // Clear any existing tokens before new login
+            localStorage.removeItem('portal_token');
+            localStorage.removeItem('user');
+
+            // Use the full API URL with the correct endpoint
+            window.location.href = `${apiUrl}/login/google`;
         } catch (error) {
             console.error("Error while logging in with Google:", error);
             showAlert({
                 title: "Error!",
-                text: "Error while logging in with Google:", error,
+                text: "Error while logging in with Google: " + error.message,
                 icon: "error",
             });
         }

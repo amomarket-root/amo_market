@@ -39,7 +39,7 @@ export function SnackbarProvider({ children }) {
     open: false,
     message: '',
     severity: 'success', // default severity
-    autoHideDuration: 1000,
+    autoHideDuration: 5000,
   });
 
   const showSnackbar = (message, options = {}) => {

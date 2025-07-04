@@ -3,629 +3,82 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Mail\DeliveryResetPasswordMail;
-use App\Mail\PasswordResetSuccessMail;
-use App\Mail\RegistrationMail;
 use App\Models\AccountDeletion;
-use App\Models\PasswordResetToken;
+use Illuminate\Http\RedirectResponse;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class PortalAuthenticateController extends Controller
 {
-    /**
-     * @OA\Post(
-     *     path="/api/portal/register",
-     *     operationId="registerUser",
-     *     tags={"Authentication"},
-     *     summary="Register a new user",
-     *     description="Creates a new user account with customer role",
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"name", "email", "password", "password_confirmation"},
-     *
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123"),
-     *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=201,
-     *         description="User registered successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Registration success"),
-     *             @OA\Property(property="info", type="string", example="Please navigate to the login page...")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation error"),
-     *             @OA\Property(property="errors", type="object", example={"email": {"The email field is required."}})
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="An error occurred during registration...")
-     *         )
-     *     )
-     * )
-     */
-    public function register(Request $request)
+    public function redirectToProvider()
+    {
+        return Socialite::driver('google')
+            ->stateless()
+            ->with(['redirect_uri' => env('GOOGLE_REDIRECT_URI')])
+            ->redirect();
+    }
+
+    public function handleProviderCallback(): RedirectResponse
     {
         try {
-            $validateUser = Validator::make($request->all(), [
-                'name'     => 'required',
-                'email'    => 'required|email|unique:users,email',
-                'password' => 'required|string|min:6|confirmed',
-            ]);
-
-            if ($validateUser->fails()) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Validation error',
-                    'errors'  => $validateUser->errors(),
-                ], 422);
-            }
-
-            $roleId = Role::where('name', 'Customer')->first()->id;
-
-            $user = User::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'password' => Hash::make($request->password),
-                'role_id'  => $roleId,
-                'status'   => 1,
-            ]);
-
-            $maskedPassword = substr($request->password, 0, 2).str_repeat('*', strlen($request->password) - 4).substr($request->password, -2);
-
-            Mail::to($user->email)->queue(new RegistrationMail($user->email, $maskedPassword));
-
-            return response()->json([
-                'status'  => true,
-                'message' => 'Registration success',
-                'info'    => 'Please navigate to the login page, and after logging in, you can start using our service.',
-            ], 201);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'An error occurred during registration. Please try again later.',
-            ], 500);
+            $socialUser = Socialite::driver('google')->stateless()->user();
+        } catch (\Exception $e) {
+            return redirect()->to('/?error=invalid_credentials');
         }
+
+        // Find or create user
+        $user = User::firstOrCreate(
+            ['email' => $socialUser->getEmail()],
+            [
+                'name' => $socialUser->getName(),
+                'email_verified_at' => now(),
+                'password' => null,
+                'role_id' => Role::where('name', 'Customer')->first()->id,
+                'status' => 1,
+            ]
+        );
+
+        // Update or create provider
+        $user->providers()->updateOrCreate(
+            [
+                'provider' => 'google',
+                'provider_id' => $socialUser->getId(),
+            ],
+            ['avatar' => $socialUser->getAvatar()]
+        );
+
+        // Update login time
+        $user->update(['login_time' => now()]);
+
+        // Create token using your existing naming convention
+        $token = $user->createToken('API TOKEN')->plainTextToken;
+
+        return redirect()->to(
+            env('FRONTEND_URL', 'http://localhost:8001') .
+                '/auth/callback?portal_token=' . urlencode($token) .
+                '&user=' . urlencode(json_encode([
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role_id' => $user->role_id,
+                    'status' => $user->status,
+                    'is_authenticate' => true
+                ]))
+        );
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/portal/login",
-     *     operationId="loginUser",
-     *     tags={"Authentication"},
-     *     summary="Authenticate user",
-     *     description="Logs in a user and returns an access token",
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"email", "password"},
-     *
-     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Login successful",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="User Logged In Successfully"),
-     *             @OA\Property(property="user_id", type="integer", example=1),
-     *             @OA\Property(property="user_name", type="string", example="John Doe"),
-     *             @OA\Property(property="is_authenticate", type="boolean", example=true),
-     *             @OA\Property(property="portal_token", type="string", example="1|abcdef123456")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Email & Password do not match our records."),
-     *             @OA\Property(property="info", type="string", example="Please check your credentials...")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=403,
-     *         description="Forbidden - Account inactive",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Account is inactive!"),
-     *             @OA\Property(property="info", type="string", example="Please contact your Amo Market Administrator...")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-    public function login(Request $request)
-    {
-        try {
-            $validateUser = Validator::make(
-                $request->all(),
-                [
-                    'email'    => 'required|email',
-                    'password' => 'required',
-                ]
-            );
-
-            if ($validateUser->fails()) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Validation error',
-                    'errors'  => $validateUser->errors(),
-                ], 401);
-            }
-
-            if (! Auth::attempt($request->only(['email', 'password']))) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Email & Password do not match our records.',
-                    'info'    => 'Please check your credentials and try again. If you have forgotten your password, use the "Forgot Password" option to reset it.',
-                ], 401);
-            }
-
-            $user = Auth::user();
-
-            if (is_null($user->role_id) || $user->role_id === '' || $user->status === '0' || is_null($user->status) || $user->status === '') {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Account is inactive!',
-                    'info'    => 'Please contact your Amo Market Administrator to activate your account.',
-                ], 403);
-            }
-
-            $user->update(['login_time' => Carbon::now()]);
-
-            return response()->json([
-                'status'          => true,
-                'message'         => 'User Logged In Successfully',
-                'user_id'         => $user->id,
-                'user_name'       => $user->name,
-                'is_authenticate' => true,
-                'portal_token'    => $user->createToken('API TOKEN')->plainTextToken,
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status'  => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/portal/forgot_password",
-     *     operationId="forgotPassword",
-     *     tags={"Authentication"},
-     *     summary="Request password reset",
-     *     description="Sends a password reset link to the user's email",
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"email"},
-     *
-     *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Reset link sent",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Reset link sent to your email")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="validation error"),
-     *             @OA\Property(property="errors", type="object", example={"email": {"The email field is required."}})
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="User not found"),
-     *             @OA\Property(property="info", type="string", example="Please ensure you have registered with us...")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-    public function forgotPassword(Request $request)
-    {
-        try {
-            $validateUser = Validator::make(
-                $request->all(),
-                [
-                    'email' => 'required|email',
-                ]
-            );
-
-            if ($validateUser->fails()) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'validation error',
-                    'errors'  => $validateUser->errors(),
-                ], 401);
-            }
-
-            $user = User::where('email', $request->email)->first();
-
-            if (! $user) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'User not found',
-                    'info'    => 'Please ensure you have registered with us. If you believe this is a mistake, contact support for Amo Market administrator.',
-                ], 404);
-            }
-
-            $token = Str::random(60);
-
-            $tokenData = PasswordResetToken::updateOrCreate(
-                ['email' => $user->email],
-                [
-                    'id'    => Str::uuid(),
-                    'token' => $token,
-                ]
-            );
-
-            Mail::to($user->email)->queue(new DeliveryResetPasswordMail($token));
-
-            return response()->json([
-                'status'  => true,
-                'message' => 'Reset link sent to your email',
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status'  => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/portal/reset_password",
-     *     operationId="resetPassword",
-     *     tags={"Authentication"},
-     *     summary="Reset user password",
-     *     description="Resets the user's password using a valid token",
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"token", "password", "password_confirmation"},
-     *
-     *             @OA\Property(property="token", type="string", example="abc123"),
-     *             @OA\Property(property="password", type="string", format="password", example="newpassword123"),
-     *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword123")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Password reset successful",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Password has been reset successfully."),
-     *             @OA\Property(property="info", type="string", example="Go to the login page...")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid token",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Invalid or expired token. Try again."),
-     *             @OA\Property(property="info", type="string", example="The password reset link may have expired...")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="validation error"),
-     *             @OA\Property(property="errors", type="object", example={"password": {"The password field is required."}})
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="User not found."),
-     *             @OA\Property(property="info", type="string", example="Please ensure you have registered with us...")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-    public function resetPassword(Request $request)
-    {
-        try {
-            $validateUser = Validator::make(
-                $request->all(),
-                [
-                    'token'    => 'required|string',
-                    'password' => 'required|string|min:6|confirmed',
-                ]
-            );
-
-            if ($validateUser->fails()) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'validation error',
-                    'errors'  => $validateUser->errors(),
-                ], 401);
-            }
-
-            $passwordReset = PasswordResetToken::where('token', $request->token)->first();
-            if (! $passwordReset) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or expired token. Try again.',
-                    'info'    => 'The password reset link may have expired or is incorrect. Please request a new password reset link to proceed.',
-                ], 400);
-            }
-
-            $user = User::where('email', $passwordReset->email)->first();
-
-            if (! $user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found.',
-                    'info'    => 'Please ensure you have registered with us. If you believe this is a mistake, contact support for assistance.',
-                ], 404);
-            }
-
-            $user->update([
-                'password' => bcrypt($request->password),
-            ]);
-
-            $passwordReset->delete();
-
-            Mail::to($user->email)->queue(new PasswordResetSuccessMail($user));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Password has been reset successfully.',
-                'info'    => 'Go to the login page. After authentication, you can use our features.',
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status'  => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    // [Rest of your methods with similar Swagger documentation...]
-    // Continue with the same pattern for logout, changePassword, viewProfile, etc.
-
-    /**
-     * @OA\Get(
-     *     path="/api/portal/auth/google",
-     *     operationId="googleLogin",
-     *     tags={"Social Authentication"},
-     *     summary="Redirect to Google for authentication",
-     *     description="Initiates the OAuth flow with Google",
-     *
-     *     @OA\Response(
-     *         response=302,
-     *         description="Redirect to Google's OAuth page"
-     *     )
-     * )
-     */
-    public function googleLogin()
-    {
-        return Socialite::driver('google')->stateless()->redirect();
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/portal/auth/google/callback",
-     *     operationId="googleHandle",
-     *     tags={"Social Authentication"},
-     *     summary="Handle Google OAuth callback",
-     *     description="Processes the Google OAuth callback and authenticates/creates user",
-     *
-     *     @OA\Response(
-     *         response=302,
-     *         description="Redirect to dashboard with token"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-    public function googleHandle()
-    {
-        try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
-
-            $user = User::firstOrCreate(
-                ['email' => $googleUser->email],
-                [
-                    'social_media_id' => $googleUser->id,
-                    'name'            => $googleUser->name,
-                    'avatar'          => $googleUser->avatar,
-                    'login_time'      => Carbon::now(),
-                    'status'          => '1',
-                ]
-            );
-
-            $token = $user->createToken('API TOKEN')->plainTextToken;
-
-            // dd($token);
-            // return response()->json([
-            //     'status' => true,
-            //     'message' => 'Log In With Google Successfully',
-            //     'token' => $token
-            // ], 200);
-            return redirect('http://localhost:3000/dashboard?token='.$token);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status'  => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/portal/auth/facebook",
-     *     operationId="facebookLogin",
-     *     tags={"Social Authentication"},
-     *     summary="Redirect to Facebook for authentication",
-     *     description="Initiates the OAuth flow with Facebook",
-     *
-     *     @OA\Response(
-     *         response=302,
-     *         description="Redirect to Facebook's OAuth page"
-     *     )
-     * )
-     */
     public function facebookLogin()
     {
         return Socialite::driver('facebook')->stateless()->redirect();
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/portal/auth/facebook/callback",
-     *     operationId="facebookHandle",
-     *     tags={"Social Authentication"},
-     *     summary="Handle Facebook OAuth callback",
-     *     description="Processes the Facebook OAuth callback and authenticates/creates user",
-     *
-     *     @OA\Response(
-     *         response=302,
-     *         description="Redirect to dashboard with token"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
+
     public function facebookHandle()
     {
         try {
@@ -644,7 +97,7 @@ class PortalAuthenticateController extends Controller
 
             $token = $user->createToken('API TOKEN')->plainTextToken;
 
-            return redirect('http://localhost:3000/dashboard?token='.$token);
+            return redirect('http://localhost:3000/dashboard?token=' . $token);
         } catch (\Throwable $th) {
             return response()->json([
                 'status'  => false,
@@ -653,58 +106,7 @@ class PortalAuthenticateController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/portal/delete_account",
-     *     operationId="deleteAccount",
-     *     tags={"Account Management"},
-     *     summary="Delete user account",
-     *     description="Deletes the authenticated user's account after storing the reason",
-     *     security={{"bearerAuth": {}}},
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"reason"},
-     *
-     *             @OA\Property(property="reason", type="string", example="Privacy concerns"),
-     *             @OA\Property(property="feedback", type="string", example="Improve your privacy policy")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Account deleted successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="message", type="string", example="Your account has been deleted successfully.")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="message", type="string", example="Unauthorized")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
-     *             @OA\Property(property="errors", type="object", example={"reason": {"The reason field is required."}})
-     *         )
-     *     )
-     * )
-     */
+
     public function deleteAccount(Request $request)
     {
         $request->validate([
@@ -744,13 +146,13 @@ class PortalAuthenticateController extends Controller
             $messageBody = "Your one-time OTP is $otp. Do not share it with anyone.";
 
             // Format phone number (add 'whatsapp:' prefix)
-            $formattedPhoneNumber = 'whatsapp:'.$phoneNumber;
+            $formattedPhoneNumber = 'whatsapp:' . $phoneNumber;
 
             // Send WhatsApp message
             $message = $twilio->messages->create(
                 $formattedPhoneNumber,                // WhatsApp recipient (with international code)
                 [
-                    'from' => 'whatsapp:'.env('TWILIO_WHATSAPP_NUMBER'), // Twilio WhatsApp number
+                    'from' => 'whatsapp:' . env('TWILIO_WHATSAPP_NUMBER'), // Twilio WhatsApp number
                     'body' => $messageBody,                 // OTP message content
                 ]
             );
@@ -778,61 +180,6 @@ class PortalAuthenticateController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/portal/auth_mobile",
-     *     operationId="authMobile",
-     *     tags={"Mobile Authentication"},
-     *     summary="Authenticate via mobile number",
-     *     description="Initiates mobile authentication by sending OTP via WhatsApp",
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"name", "number"},
-     *
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="number", type="string", example="+1234567890")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="OTP sent successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="OTP sent successfully"),
-     *             @OA\Property(property="token", type="string", example="1|abcdef123456")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation error"),
-     *             @OA\Property(property="errors", type="object", example={"number": {"The number field is required."}})
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Failed to send OTP SMS")
-     *         )
-     *     )
-     * )
-     */
     public function authMobile(Request $request)
     {
         try {
@@ -853,6 +200,8 @@ class PortalAuthenticateController extends Controller
             $user = User::create([
                 'name'   => $request->name,
                 'number' => $request->number,
+                'password' => null,
+                'role_id' => Role::where('name', 'Customer')->first()->id,
                 'status' => '0',
             ]);
 
@@ -901,71 +250,6 @@ class PortalAuthenticateController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/portal/verify_otp",
-     *     operationId="verifyOtp",
-     *     tags={"Mobile Authentication"},
-     *     summary="Verify mobile OTP",
-     *     description="Verifies the OTP sent to mobile number",
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"otp"},
-     *
-     *             @OA\Property(property="otp", type="string", example="123456")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="OTP verified successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="OTP verified successfully"),
-     *             @OA\Property(property="portal_token", type="string", example="1|abcdef123456")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Invalid OTP",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Invalid OTP or OTP expired")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation error"),
-     *             @OA\Property(property="errors", type="object", example={"otp": {"The otp field is required."}})
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
     public function verifyOtp(Request $request)
     {
         try {
@@ -1001,6 +285,9 @@ class PortalAuthenticateController extends Controller
                 return response()->json([
                     'status'       => true,
                     'message'      => 'OTP verified successfully',
+                    'user_id'         => $user->id,
+                    'user_name'       => $user->name,
+                    'is_authenticate' => true,
                     'portal_token' => $authToken,
                 ], 200);
             } else {
@@ -1017,64 +304,7 @@ class PortalAuthenticateController extends Controller
         }
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/portal/profile_avatar",
-     *     operationId="getProfileAvatar",
-     *     tags={"Profile"},
-     *     summary="Get user's profile avatar",
-     *     description="Retrieves the authenticated user's profile avatar",
-     *     security={{"bearerAuth": {}}},
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Avatar retrieved successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Avatar retrieved successfully."),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="path", type="string", example="avatars/123.jpg")
-     *             )
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Unauthorized access.")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=404,
-     *         description="Avatar not found",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No Avatar found for the user.")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="An error occurred while retrieving the avatar.")
-     *         )
-     *     )
-     * )
-     */
+
     public function getProfileAvatar()
     {
         try {
@@ -1117,54 +347,7 @@ class PortalAuthenticateController extends Controller
         }
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/portal/roles",
-     *     operationId="getAllRole",
-     *     tags={"Roles"},
-     *     summary="Get all available roles",
-     *     description="Retrieves a list of all roles in the system",
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Roles retrieved successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Roles retrieved successfully."),
-     *             @OA\Property(property="data", type="array", @OA\Items(
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="Admin"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time")
-     *             ))
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=404,
-     *         description="No roles found",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No roles found.")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="An error occurred while retrieving roles.")
-     *         )
-     *     )
-     * )
-     */
+
     public function getAllRole()
     {
         try {
@@ -1196,261 +379,7 @@ class PortalAuthenticateController extends Controller
         }
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/portal/profile",
-     *     operationId="viewProfile",
-     *     tags={"Profile"},
-     *     summary="Get authenticated user's profile",
-     *     description="Retrieves the profile information of the currently authenticated user",
-     *     security={{"bearerAuth": {}}},
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Profile retrieved successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="John Doe"),
-     *                 @OA\Property(property="email", type="string", example="user@example.com"),
-     *                 @OA\Property(property="role", type="object",
-     *                     @OA\Property(property="id", type="integer", example=2),
-     *                     @OA\Property(property="name", type="string", example="Customer")
-     *                 ),
-     *                 @OA\Property(property="avatar", type="object", nullable=true)
-     *             )
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No user logged in")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-    public function viewProfile()
-    {
-        try {
-            // Get the currently authenticated user
-            $user = Auth::user();
 
-            if (! $user) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'No user logged in',
-                ], 401);
-            }
-
-            // Ensure $user is an Eloquent model instance
-            $user = User::with(['role', 'avatar'])->find($user->id);
-
-            // Return the user details as response
-            return response()->json([
-                'status' => true,
-                'user'   => $user,
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status'  => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/portal/change_password",
-     *     operationId="changePassword",
-     *     tags={"Authentication"},
-     *     summary="Change user password",
-     *     description="Changes the authenticated user's password after verifying the old password",
-     *     security={{"bearerAuth": {}}},
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"old_password", "password", "password_confirmation"},
-     *
-     *             @OA\Property(property="old_password", type="string", format="password", example="oldPassword123"),
-     *             @OA\Property(property="password", type="string", format="password", example="newPassword123"),
-     *             @OA\Property(property="password_confirmation", type="string", format="password", example="newPassword123")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Password changed successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Password updated successfully."),
-     *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="John Doe"),
-     *                 @OA\Property(property="email", type="string", format="email", example="user@example.com"),
-     *                 @OA\Property(property="role_id", type="integer", example=2),
-     *                 @OA\Property(property="status", type="integer", example=1)
-     *             )
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid old password",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Old Password Is Incorrect. Try Again..")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Unauthenticated.")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation error"),
-     *             @OA\Property(property="errors", type="object", example={"password": {"The password field is required."}})
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-    public function changePassword(Request $request)
-    {
-        try {
-            // Validate the request
-            $validator = Validator::make($request->all(), [
-                'old_password' => 'required|string|min:6',
-                'password'     => 'required|string|min:6|confirmed',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Validation error',
-                    'errors'  => $validator->errors(),
-                ], 400);
-            }
-
-            // Retrieve the authenticated user
-            $user = Auth::user();
-
-            // Check if the old password matches
-            if (! Hash::check($request->old_password, $user->password)) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Old Password Is Incorrect. Try Again..',
-                ], 400);
-            }
-
-            // Update the password
-            $user->update([
-                'password' => Hash::make($request->password),
-            ]);
-
-            return response()->json([
-                'status'  => true,
-                'message' => 'Password updated successfully.',
-                'user'    => $user,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'An error occurred: '.$e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/portal/logout",
-     *     operationId="logout",
-     *     tags={"Authentication"},
-     *     summary="Logout user",
-     *     description="Invalidates the current access token and logs out the user",
-     *     security={{"bearerAuth": {}}},
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Logged out successfully",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Logout successfully.")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No user logged in")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
     public function logout(Request $request)
     {
         try {
