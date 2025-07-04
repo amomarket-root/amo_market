@@ -1,26 +1,7 @@
 import React, { useState } from "react";
-import {
-    Dialog,
-    AppBar,
-    Toolbar,
-    IconButton,
-    Typography,
-    Slide,
-    Box,
-    Paper,
-    Tooltip,
-    Avatar,
-    Grid,
-    useMediaQuery,
-} from "@mui/material";
+import { Dialog, AppBar, Toolbar, IconButton, Typography, Slide, Box, Paper, Tooltip, Avatar, Grid, useMediaQuery, } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import PaymentIcon from "@mui/icons-material/Payment";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import WalletIcon from "@mui/icons-material/Wallet";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useSweetAlert } from "../Theme/SweetAlert";
 import CashfreePaymentUI from "./CashfreePaymentUI";
 
@@ -38,34 +19,25 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
     const [selectedSection, setSelectedSection] = useState(null);
 
     const onlineMethods = [
-        { title: "Cards", description: "Add credit and debit cards", icon: <CreditCardIcon /> },
-        { title: "Netbanking", description: "Pay via your bank", icon: <AccountBalanceIcon /> },
-        { title: "UPI", description: "Pay using any UPI app", icon: <PaymentIcon /> },
-        { title: "Wallet", description: "Use your wallet balance", icon: <WalletIcon /> },
-        { title: "PhonePe", description: "Pay via PhonePe", icon: <PaymentIcon /> },
-        { title: "Google Pay", description: "Pay via GPay", icon: <PaymentIcon /> },
-        { title: "Cred", description: "Pay using Cred", icon: <PaymentIcon /> },
-        { title: "Paytm", description: "Pay using Paytm", icon: <WalletIcon /> },
-        { title: "More", description: "More payment options coming soon", icon: <MoreHorizIcon /> },
+        { title: "Cards", description: "Add credit and debit cards", image: "/image/payment/cards.webp" },
+        { title: "Netbanking", description: "Pay via your bank", image: "/image/payment/netbanking.webp" },
+        { title: "UPI", description: "Pay using any UPI app", image: "/image/payment/upi.webp" },
+        { title: "Wallet", description: "Use your wallet balance", image: "/image/payment/wallet.webp" },
+        { title: "PhonePe", description: "Pay via PhonePe", image: "/image/payment/phonepe.webp" },
+        { title: "Google Pay", description: "Pay via GPay", image: "/image/payment/googlepay.webp" },
+        { title: "Cred", description: "Pay using Cred", image: "/image/payment/cred.webp" },
+        { title: "Paytm", description: "Pay using Paytm", image: "/image/payment/paytm.webp" },
+        { title: "More", description: "More payment options coming soon", image: "/image/payment/more.webp" },
     ];
 
     const offlineMethods = [
-        { title: "Cash on Delivery",
-            description: "Cash at your door",
-            icon: <LocalShippingIcon />,
-            isComingSoon: true,
-        },
-        {
-            title: "UPI/BHIM on Delivery",
-            description: "Scan and pay at delivery",
-            icon: <PaymentIcon />,
-            isComingSoon: true,
-        },
+        { title: "Cash on Delivery", description: "Cash at your door", image: "/image/payment/cash_on_delivery.webp", isComingSoon: true },
+        { title: "UPI/BHIM on Delivery", description: "Scan and pay at delivery", image: "/image/payment/bhim_upi.webp", isComingSoon: true },
+        { title: "Amo Market pay Later", description: "Pay later option", image: "/image/payment/amo_market_pay_later.webp", isComingSoon: true },
     ];
 
     const handlePaymentMethodClick = (method) => {
         const onlineTitles = onlineMethods.map((m) => m.title);
-
         if (onlineTitles.includes(method.title) && !method.isComingSoon) {
             setSelectedMethod(method.title);
             setSelectedSection("online");
@@ -96,12 +68,14 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
     const renderMethodGrid = (methods) => (
         <Grid container spacing={2}>
             {methods.map((method, index) => (
-                <Grid item xs={4} sm={3} md={3} lg={3} key={index} sx={{ textAlign: "center" }}>
+                <Grid item xs={4} key={index}>
                     <Tooltip title={method.description} arrow placement="top">
                         <Box
                             sx={{
                                 cursor: method.isComingSoon ? "not-allowed" : "pointer",
-                                opacity: method.isComingSoon ? 0.7 : 1,
+                                opacity: method.isComingSoon ? 0.6 : 1,
+                                textAlign: "center",
+                                transition: "all 0.3s ease",
                                 "&:hover .avatar": {
                                     transform: method.isComingSoon ? "none" : "scale(1.1)",
                                 },
@@ -110,23 +84,24 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
                         >
                             <Avatar
                                 className="avatar"
+                                src={method.image}
+                                alt={method.title}
                                 sx={{
-                                    bgcolor: method.isComingSoon
-                                        ? "grey.300"
-                                        : "primary.main",
-                                    color: "#fff",
-                                    width: 60,
-                                    height: 60,
+                                    bgcolor: "white",
+                                    width: 70,
+                                    height: 70,
                                     mx: "auto",
+                                    boxShadow: 3,
                                     transition: "transform 0.2s",
+                                    '& img': {
+                                        objectFit: 'contain',
+                                        width: '100%',
+                                        height: '100%',
+                                        borderRadius: '50%'
+                                    }
                                 }}
-                            >
-                                {method.icon}
-                            </Avatar>
-                            <Typography
-                                variant="body2"
-                                sx={{ mt: 1, fontWeight: 500 }}
-                            >
+                            />
+                            <Typography variant="body2" sx={{ mt: 1, fontWeight: 500 }}>
                                 {method.title}
                             </Typography>
                             {method.isComingSoon && (
@@ -151,20 +126,16 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
             onClose={handleClose}
             TransitionComponent={Transition}
             keepMounted
-            sx={
-                !isMobile
-                    ? {
-                        "& .MuiDialog-paper": {
-                            position: "fixed",
-                            right: 0,
-                            margin: 0,
-                            width: "30%",
-                            height: "100vh",
-                            maxHeight: "100vh",
-                        },
-                    }
-                    : {}
-            }
+            sx={!isMobile ? {
+                "& .MuiDialog-paper": {
+                    position: "fixed",
+                    right: 0,
+                    margin: 0,
+                    width: "30%",
+                    height: "100vh",
+                    maxHeight: "100vh",
+                },
+            } : {}}
         >
             <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
                 <AppBar
@@ -215,14 +186,13 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
                                     p: 2,
                                     borderRadius: 2,
                                     mb: 2,
-                                    border: selectedSection === "online" ? `2px solid ${theme.palette.primary.main}` : "none"
+                                    mt: 1,
+                                    border: selectedSection === "online" ? `2px solid ${theme.palette.primary.main}` : "none",
+                                    backgroundColor: "#fff"
                                 }}
                                 onClick={() => setSelectedSection("online")}
                             >
-                                <Typography
-                                    variant="h6"
-                                    sx={{ fontWeight: "bold", mb: 2 }}
-                                >
+                                <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
                                     Online Payments
                                 </Typography>
                                 {renderMethodGrid(onlineMethods)}
@@ -233,14 +203,12 @@ const PaymentMethodsModel = ({ open, onClose, onPaymentSuccess }) => {
                                 sx={{
                                     p: 2,
                                     borderRadius: 2,
-                                    border: selectedSection === "offline" ? `2px solid ${theme.palette.primary.main}` : "none"
+                                    border: selectedSection === "offline" ? `2px solid ${theme.palette.primary.main}` : "none",
+                                    backgroundColor: "#fff"
                                 }}
                                 onClick={() => setSelectedSection("offline")}
                             >
-                                <Typography
-                                    variant="h6"
-                                    sx={{ fontWeight: "bold", mb: 2 }}
-                                >
+                                <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
                                     Offline Payments
                                 </Typography>
                                 {renderMethodGrid(offlineMethods)}
