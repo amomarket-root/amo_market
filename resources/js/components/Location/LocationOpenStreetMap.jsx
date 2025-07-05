@@ -233,7 +233,7 @@ const Location = ({ onLocationSelect }) => {
                                     textAlign: 'center',
                                 }}
                             >
-                                <img src="/image/searching_location.gif" alt="Error" style={{ width: 140, height: 130, marginBottom: 1 }} />
+                                <img src="/image/searching_location.webp" alt="Error" style={{ width: 140, height: 130, marginBottom: 1 }} />
                                 <Typography variant="body2" color="error">
                                     {error}
                                 </Typography>

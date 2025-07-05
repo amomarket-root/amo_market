@@ -103,7 +103,7 @@ const LocationPopover = ({
                     }}
                 >
                     <img
-                        src="/image/searching_location.gif"
+                        src="/image/searching_location.webp"
                         alt="Error"
                         style={{ width: 140, height: 130, marginBottom: 1 }}
                         loading="eager"

@@ -1,22 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import axios from "axios";
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import GoogleIcon from "@mui/icons-material/Google";
-import FacebookIcon from '@mui/icons-material/Facebook';
-import EmailIcon from '@mui/icons-material/Email';
+import FacebookIcon from "@mui/icons-material/Facebook";
+import Avatar from "@mui/material/Avatar";
 import OTPVerificationModal from "./OTPVerificationModal";
-import { useNavigate } from 'react-router-dom';
-import { useSweetAlert } from '../Theme/SweetAlert';
-import { useSnackbar } from '../Theme/SnackbarAlert';
+import { useNavigate } from "react-router-dom";
+import { useSweetAlert } from "../Theme/SweetAlert";
+import { useSnackbar } from "../Theme/SnackbarAlert";
 
 const LoginModal = ({ open, onClose }) => {
     const apiUrl = import.meta.env.VITE_API_URL;
@@ -32,226 +31,281 @@ const LoginModal = ({ open, onClose }) => {
 
     const handleGoogleLogin = () => {
         try {
-            // Clear any existing tokens before new login
-            localStorage.removeItem('portal_token');
-            localStorage.removeItem('user');
-
-            // Use the full API URL with the correct endpoint
+            localStorage.removeItem("portal_token");
+            localStorage.removeItem("user");
             window.location.href = `${apiUrl}/login/google`;
         } catch (error) {
-            console.error("Error while logging in with Google:", error);
             showAlert({
                 title: "Error!",
-                text: "Error while logging in with Google: " + error.message,
+                text: "Google login failed: " + error.message,
                 icon: "error",
             });
         }
-    }
+    };
 
     const handleFacebookLogin = () => {
         try {
             window.location.href = `${apiUrl}/portal/authenticate/facebook`;
         } catch (error) {
-            console.error("Error while logging in with Facebook:", error);
             showAlert({
                 title: "Error!",
-                text: "Error while logging in with Facebook:", error,
+                text: "Facebook login failed",
                 icon: "error",
             });
         }
-    }
+    };
 
-    const handleMailLogin = () => {
-        navigate('/login');
-    }
+    const validateForm = () => {
+        let valid = true;
+        const trimmedName = name.trim();
+        const trimmedNumber = number.trim();
+
+        setNameError("");
+        setNumberError("");
+
+        if (!trimmedName) {
+            setNameError("Name is required");
+            valid = false;
+        } else if (trimmedName.length < 2) {
+            setNameError("Name must be at least 2 characters");
+            valid = false;
+        }
+
+        const mobileRegex = /^[6-9]\d{9}$/;
+        if (!trimmedNumber) {
+            setNumberError("Mobile number is required");
+            valid = false;
+        } else if (!mobileRegex.test(trimmedNumber)) {
+            setNumberError("Enter a valid 10-digit Indian mobile number");
+            valid = false;
+        }
+
+        return valid;
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setNameError("");
-        setNumberError("");
+        if (!validateForm()) return;
+
         setIsLoading(true);
 
         try {
             const response = await axios.post(
                 `${apiUrl}/portal/authenticate/auth_mobile`,
-                { name, number }
+                { name: name.trim(), number: number.trim() }
             );
 
-            console.log("Response from server:", response.data);
-
-            if (localStorage.getItem('otp_token')) {
-                localStorage.removeItem('otp_token');
-            }
+            localStorage.removeItem("otp_token");
             localStorage.setItem("otp_token", response.data.token);
 
-            // Show initial success message for 1 second
-            showSnackbar(response.data.message, { severity: 'success' }, 1000);
-            // After 1 second, close the modal and show OTP
+            showSnackbar(response.data.message, { severity: "success" }, 1000);
             setTimeout(() => {
                 onClose(false);
                 setOtpOpen(true);
-                // Show OTP for 8 seconds (shorter duration)
-                showSnackbar(`Your OTP is: ${response.data.otp}`, { severity: 'info' }, 8000);
+                showSnackbar(
+                    `Your OTP is: ${response.data.otp}`,
+                    { severity: "info" },
+                    8000
+                );
             }, 1000);
-
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.errors) {
-                if (error.response.data.errors.name) {
-                    setNameError(error.response.data.errors.name[0]);
-                }
-                if (error.response.data.errors.number) {
-                    setNumberError(error.response.data.errors.number[0]);
-                }
+            if (error.response?.data?.errors) {
+                const errs = error.response.data.errors;
+                if (errs.name) setNameError(errs.name[0]);
+                if (errs.number) setNumberError(errs.number[0]);
             } else {
-                showSnackbar(error.response?.data?.message || 'An error occurred during login', { severity: 'error' }, 2000);
+                showSnackbar(
+                    error.response?.data?.message ||
+                        "An error occurred during login",
+                    { severity: "error" },
+                    2000
+                );
             }
         } finally {
             setIsLoading(false);
         }
     };
 
+    // Clear errors while typing if field becomes valid
+    const handleNameChange = (e) => {
+        const val = e.target.value;
+        setName(val);
+        if (val.trim().length >= 2) setNameError("");
+    };
+
+    const handleNumberChange = (e) => {
+        const val = e.target.value;
+        setNumber(val);
+        const mobileRegex = /^[6-9]\d{9}$/;
+        if (mobileRegex.test(val.trim())) setNumberError("");
+    };
+
     return (
         <>
-            {/* Mobile Verification Dialog */}
             <Dialog
                 open={open}
                 onClose={onClose}
                 maxWidth="xs"
                 fullWidth
-                sx={{ borderRadius: 6 }}
-                PaperProps={{ style: { borderRadius: '15px' } }}
+                PaperProps={{ style: { borderRadius: "12px" } }}
             >
-                <DialogTitle sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" component="span" fontWeight="bold">
-                        India's 20 minute app
-                    </Typography>
-                    <IconButton onClick={onClose} sx={{ position: 'absolute', right: 8, top: 8 }}>
+                <DialogTitle sx={{ textAlign: "center", pb: 0 }}>
+                    <Box
+                        display="flex"
+                        flexDirection="column"
+                        alignItems="center"
+                    >
+                        <Avatar
+                            alt="App Logo"
+                            src="/image/amo_market_icon.webp"
+                            loading="eager"
+                            decoding="async"
+                            sx={{
+                                width: 55,
+                                height: 55,
+                                mb: 0.5,
+                                bgcolor: "white",
+                                "& img": {
+                                    objectFit: "contain",
+                                    width: "100%",
+                                    height: "100%",
+                                },
+                            }}
+                        />
+                        <Typography variant="h6" fontWeight="bold">
+                            India's 20 minute delivery app
+                        </Typography>
+                    </Box>
+                    <IconButton
+                        onClick={onClose}
+                        sx={{ position: "absolute", right: 8, top: 8 }}
+                    >
                         <CloseIcon />
                     </IconButton>
                 </DialogTitle>
+
                 <form onSubmit={handleLogin}>
-                    <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 0 }}>
-                        <Typography variant="body1" gutterBottom>
+                    <DialogContent sx={{ pt: 0.5, px: 3 }}>
+                        <Typography variant="body1" align="center" gutterBottom>
                             Log in or Sign up
                         </Typography>
 
                         <TextField
                             variant="outlined"
-                            margin="normal"
+                            margin="dense"
                             fullWidth
                             label="Enter your name"
                             type="text"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={handleNameChange}
                             error={!!nameError}
                             helperText={nameError}
                         />
 
                         <TextField
                             variant="outlined"
-                            margin="normal"
+                            margin="dense"
                             fullWidth
-                            id="mobile"
                             label="Enter mobile number"
                             type="tel"
                             value={number}
-                            onChange={(e) => setNumber(e.target.value)}
+                            onChange={handleNumberChange}
                             error={!!numberError}
                             helperText={numberError}
                             InputProps={{
-                                startAdornment: <Typography variant="body1" style={{ marginRight: 8 }}>+91</Typography>
+                                startAdornment: (
+                                    <Typography variant="body1" sx={{ mr: 1 }}>
+                                        +91
+                                    </Typography>
+                                ),
                             }}
                         />
-                    </DialogContent>
 
-                    <DialogActions sx={{ justifyContent: 'center', marginLeft: '18px', marginRight: '18px' }}>
                         <Button
                             type="submit"
                             variant="contained"
                             color="success"
                             fullWidth
-                            size="large"
-                            sx={{ borderRadius: "4px", height: 50 }}
+                            sx={{ borderRadius: "6px", height: 42, mt: 0.5 }}
                             disabled={isLoading}
                         >
                             {isLoading ? "Loading..." : "Continue"}
                         </Button>
-                    </DialogActions>
+                    </DialogContent>
                 </form>
 
                 <Box
                     display="flex"
-                    justifyContent="space-around"
+                    justifyContent="center"
                     alignItems="center"
-                    mt={1}
-                    px={2}
+                    gap={8}
+                    sx={{ mb: 1 }}
                 >
                     <Button
                         variant="outlined"
                         sx={{
                             borderRadius: "50%",
-                            padding: 0,
                             width: 65,
                             height: 65,
                             borderColor: "#f27474",
                             color: "#f27474",
-                            '&:hover': {
-                                borderColor: "#f27474",
+                            "&:hover": {
                                 backgroundColor: "rgba(242, 116, 116, 0.1)",
-                            }
+                            },
                         }}
                         onClick={handleGoogleLogin}
                     >
-                        <GoogleIcon fontSize="large" sx={{ color: "#f27474" }} />
+                        <GoogleIcon fontSize="large" />
                     </Button>
 
                     <Button
                         variant="outlined"
                         sx={{
                             borderRadius: "50%",
-                            padding: 0,
                             width: 65,
                             height: 65,
                             borderColor: "#0f85d9",
                             color: "#0f85d9",
-                            '&:hover': {
-                                borderColor: "#0f85d9",
+                            "&:hover": {
                                 backgroundColor: "rgba(15, 133, 217, 0.1)",
-                            }
+                            },
                         }}
                         onClick={handleFacebookLogin}
                     >
                         <FacebookIcon fontSize="large" />
                     </Button>
-
-                    <Button
-                        variant="outlined"
-                        sx={{
-                            borderRadius: "50%",
-                            padding: 0,
-                            width: 65,
-                            height: 65,
-                            borderColor: "#9F63FF",
-                            color: "#9F63FF",
-                            '&:hover': {
-                                borderColor: "#9F63FF",
-                                backgroundColor: "rgba(159, 99, 255, 0.1)",
-                            }
-                        }}
-                        onClick={handleMailLogin}
-                    >
-                        <EmailIcon fontSize="large" />
-                    </Button>
                 </Box>
 
-                <div style={{ padding: 16, textAlign: 'center' }}>
+                <Box sx={{ px: 2, pb: 2, textAlign: "center" }}>
                     <Typography variant="body2">
-                        By continuing, you agree to our <button style={{ background: 'none', border: 'none', color: 'grey', textDecoration: 'underline', cursor: 'pointer' }}>Terms of Service</button> & <button style={{ background: 'none', border: 'none', color: 'grey', textDecoration: 'underline', cursor: 'pointer' }}>Privacy Policy</button>
+                        By continuing, you agree to our{" "}
+                        <button
+                            style={{
+                                background: "none",
+                                border: "none",
+                                color: "grey",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Terms of Service
+                        </button>{" "}
+                        &{" "}
+                        <button
+                            style={{
+                                background: "none",
+                                border: "none",
+                                color: "grey",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Privacy Policy
+                        </button>
                     </Typography>
-                </div>
+                </Box>
             </Dialog>
 
-            {/* OTP Verification Dialog */}
             <OTPVerificationModal
                 otpOpen={otpOpen}
                 setOtpOpen={setOtpOpen}
