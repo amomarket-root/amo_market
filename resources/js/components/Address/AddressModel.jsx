@@ -119,7 +119,7 @@ const AddressModel = ({ open, onClose, onAddressSelect }) => {
                                 position: 'fixed',
                                 right: 0,
                                 margin: 0,
-                                width: '30%',
+                                width: '38%',
                                 height: '100vh',
                                 maxHeight: '100vh',
                             },
