@@ -22,6 +22,19 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="left" ref={ref} {...props} />;
 });
 
+// Haversine Distance (in km)
+const calculateDistance = (lat1, lng1, lat2, lng2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+};
+
 const OrderModel = () => {
     const theme = useTheme();
     const navigate = useNavigate();
@@ -44,12 +57,40 @@ const OrderModel = () => {
     const [shopMarkers, setShopMarkers] = useState([]);
     const [polylines, setPolylines] = useState([]);
     const [shopStatuses, setShopStatuses] = useState({});
+    const [distance, setDistance] = useState(0);
 
     const userLocation = useMemo(() => {
         return orderDetails?.address
             ? { lat: parseFloat(orderDetails.address.latitude), lng: parseFloat(orderDetails.address.longitude) }
             : null;
     }, [orderDetails]);
+
+    const interpolateColor = (start, end, factor) => {
+        const hexToRgb = hex => hex.match(/\w\w/g).map(x => parseInt(x, 16));
+        const rgbToHex = rgb => '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('');
+        const s = hexToRgb(start), e = hexToRgb(end);
+        const result = s.map((val, i) => Math.round(val + (e[i] - val) * factor));
+        return rgbToHex(result);
+    };
+
+    const generateCurvedPolyline = (start, end, segments = 20, offset = 0.001) => {
+        const curve = [];
+        for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const lat = (1 - t) * start.lat + t * end.lat;
+            const lng = (1 - t) * start.lng + t * end.lng;
+            const curveOffset = Math.sin(t * Math.PI) * offset;
+            curve.push({ lat: lat + curveOffset, lng: lng });
+        }
+        return curve;
+    };
+
+    const fitBoundsToMap = (map, loc1, loc2) => {
+        const bounds = new window.google.maps.LatLngBounds();
+        bounds.extend(loc1);
+        bounds.extend(loc2);
+        map.fitBounds(bounds);
+    };
 
     const initializeMap = useCallback(() => {
         if (!googleMapsLoaded || !window.google || !window.google.maps || !mapRef.current || !userLocation || !shopDetails.length) {
@@ -58,6 +99,30 @@ const OrderModel = () => {
 
         const map = new window.google.maps.Map(mapRef.current, {
             zoom: 14,
+            disableDefaultUI: true, // This disables all default UI controls
+            zoomControl: false,
+            mapTypeControl: false,
+            scaleControl: false,
+            streetViewControl: false,
+            rotateControl: false,
+            fullscreenControl: false,
+            styles: [
+                {
+                    featureType: "poi",
+                    elementType: "labels",
+                    stylers: [{ visibility: "off" }]
+                },
+                {
+                    featureType: "transit",
+                    elementType: "labels",
+                    stylers: [{ visibility: "off" }]
+                },
+                {
+                    featureType: "road",
+                    elementType: "labels.icon",
+                    stylers: [{ visibility: "off" }]
+                }
+            ]
         });
         setMapInstance(map);
 
@@ -83,20 +148,48 @@ const OrderModel = () => {
             });
             newShopMarkers.push(marker);
 
-            const polyline = new window.google.maps.Polyline({
-                path: [shopLocation, userLocation],
-                geodesic: true,
-                strokeColor: "#0a0909",
-                strokeOpacity: 1,
-                strokeWeight: 3,
-                map: map,
+            // Calculate distance between shop and user
+            const calculatedDistance = calculateDistance(
+                shopLocation.lat,
+                shopLocation.lng,
+                userLocation.lat,
+                userLocation.lng
+            );
+
+            // Generate curved polyline
+            const curve = generateCurvedPolyline(shopLocation, userLocation);
+
+            // Create a polyline with gradient color
+            curve.forEach((point, i) => {
+                if (i === 0) return;
+                const color = interpolateColor('#f27474', '#10d915', i / curve.length);
+
+                const polyline = new window.google.maps.Polyline({
+                    path: [curve[i - 1], point],
+                    geodesic: true,
+                    strokeColor: color,
+                    strokeOpacity: 1.0,
+                    strokeWeight: 3,
+                    map: map,
+                });
+                newPolylines.push(polyline);
             });
-            newPolylines.push(polyline);
+
+            // Add distance label at midpoint
+            const midIndex = Math.floor(curve.length / 2);
+            const midPoint = curve[midIndex];
+
+            new window.google.maps.InfoWindow({
+                content: `<div style="color: ${theme.palette.mode === 'dark' ? '#ffffff' : '#000000'}; padding: 4px; font-weight: bold;">${calculatedDistance.toFixed(2)} km</div>`,
+                position: midPoint,
+                disableAutoPan: true
+            }).open(map);
         });
 
         setShopMarkers(newShopMarkers);
         setPolylines(newPolylines);
 
+        // User location marker
         new window.google.maps.Marker({
             position: userLocation,
             map: map,
@@ -108,6 +201,7 @@ const OrderModel = () => {
             },
         });
 
+        // Delivery boy marker
         const marker = new window.google.maps.Marker({
             position: deliveryBoyLocation || null,
             map: map,
@@ -120,7 +214,7 @@ const OrderModel = () => {
         setDeliveryBoyMarker(marker);
 
         map.fitBounds(bounds);
-    }, [googleMapsLoaded, userLocation, shopDetails, deliveryBoyLocation]);
+    }, [googleMapsLoaded, userLocation, shopDetails, deliveryBoyLocation, theme.palette.mode]);
 
     useEffect(() => {
         if (isOrderModelOpen) {
@@ -157,13 +251,24 @@ const OrderModel = () => {
                 if (mapInstance) {
                     mapInstance.panTo(newPosition);
                 }
+
+                // Calculate distance between delivery boy and user
+                if (userLocation) {
+                    const calculatedDistance = calculateDistance(
+                        newPosition.lat,
+                        newPosition.lng,
+                        userLocation.lat,
+                        userLocation.lng
+                    );
+                    setDistance(calculatedDistance);
+                }
             });
 
             return () => {
                 channel.stopListening('.delivery.live.location');
             };
         }
-    }, [orderDetails, googleMapsLoaded, deliveryBoyMarker, mapInstance]);
+    }, [orderDetails, googleMapsLoaded, deliveryBoyMarker, mapInstance, userLocation]);
 
     const fetchOrderDetails = useCallback(async () => {
         if (!selectedOrderId) {
