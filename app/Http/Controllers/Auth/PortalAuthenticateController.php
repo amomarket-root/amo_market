@@ -20,7 +20,6 @@ class PortalAuthenticateController extends Controller
     {
         return Socialite::driver('google')
             ->stateless()
-            ->with(['redirect_uri' => env('GOOGLE_REDIRECT_URI')])
             ->redirect();
     }
 

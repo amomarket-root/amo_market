@@ -336,7 +336,7 @@ const CartModal = () => {
                                 textAlign: 'center',
                             }}>
                                 <img
-                                    src="/image/empty_cart.png"
+                                    src="/image/empty_cart.webp"
                                     alt="No Cart"
                                     style={{
                                         width: '50%',

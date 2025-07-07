@@ -384,11 +384,11 @@ const CartModal = () => {
                                 textAlign: 'center',
                             }}>
                                 <img
-                                    src="/image/empty_cart.png"
+                                    src="/image/empty_cart.webp"
                                     alt="No Cart"
                                     style={{
-                                        width: '50%',
-                                        height: '50%',
+                                        width: '100%',
+                                        height: '100%',
                                         marginBottom: '16px'
                                     }}
                                 />
@@ -403,12 +403,12 @@ const CartModal = () => {
                                     sx={{
                                         marginTop: 3,
                                         width: '50%',
-                                        backgroundColor: '#7528FA',
+                                        backgroundColor: '#10d915',
                                         color: '#fff',
-                                        borderColor: '#7528FA',
+                                        borderColor: '#0bd80f',
                                         '&:hover': {
-                                            backgroundColor: '#5a1bcc',
-                                            borderColor: '#5a1bcc',
+                                            backgroundColor: '#0bd80f',
+                                            borderColor: '#07ce0b',
                                         },
                                     }}
                                     onClick={handleStartShopping}

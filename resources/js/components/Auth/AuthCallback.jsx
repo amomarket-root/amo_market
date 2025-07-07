@@ -12,10 +12,8 @@ const AuthCallback = () => {
         if (portalToken && user) {
             try {
                 // Clear existing tokens if any
-                if (localStorage.getItem('portal_token')) {
-                    localStorage.removeItem('portal_token');
-                    localStorage.removeItem('user_id');
-                }
+                localStorage.removeItem('portal_token');
+                localStorage.removeItem('user_id');
 
                 // Parse user data to get the user_id
                 const userData = JSON.parse(user);
@@ -38,25 +36,41 @@ const AuthCallback = () => {
     }, [searchParams, navigate]);
 
     return (
-        <div className="loader-container" style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            width: '100vw',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            zIndex: 9999
-        }}>
-            <div className="text-center">
-                <img src="/image/loader.gif" alt="Loading..." className="loader" style={{
-                    width: '100px',
-                    height: '100px',
-                    marginBottom: '20px'
-                }} />
-                <h2 className="text-xl font-semibold mb-2">Completing login...</h2>
+        <div
+            className="loader-container"
+            style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+                width: '100vw',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                zIndex: 9999,
+            }}
+        >
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                }}
+            >
+                <img
+                    src="/image/loader.gif"
+                    alt="Loading..."
+                    style={{
+                        width: '100px',
+                        height: '100px',
+                        marginBottom: '20px',
+                    }}
+                />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Completing login...
+                </h2>
                 <p>You'll be redirected shortly</p>
             </div>
         </div>
