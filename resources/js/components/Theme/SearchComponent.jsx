@@ -134,9 +134,9 @@ const SearchComponent = () => {
                     InputProps={{
                         ...params.InputProps,
                         startAdornment: <img
-                            src="/image/search.gif" // Ensure to replace this with the correct path to the GIF
+                            src="/image/search.webp" // Ensure to replace this with the correct path to the GIF
                             alt="Search"
-                            style={{ width: '32px', height: '32px', }} // Adjust the size and margin as needed
+                            style={{ width: '34px', height: '32px', }} // Adjust the size and margin as needed
                             loading="eager"
                             decoding="async"
                         />,
