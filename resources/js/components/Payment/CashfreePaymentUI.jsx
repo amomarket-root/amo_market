@@ -16,7 +16,7 @@ const CashfreePaymentUI = ({ selectedMethod, onClose, apiUrl, onPaymentSuccess }
                 throw new Error("Please login to proceed with payment");
             }
 
-            // Get cart data
+            // Get user cart data
             const cartResponse = await axios.get(`${apiUrl}/portal/user/cart/last-record`, {
                 headers: {
                     Authorization: `Bearer ${portal_token}`,
@@ -30,7 +30,8 @@ const CashfreePaymentUI = ({ selectedMethod, onClose, apiUrl, onPaymentSuccess }
                 name: cartData.user.name,
                 email: cartData.user.email,
                 phone: cartData.user.number || '0000000000',
-                amount: cartData.grand_total
+                amount: cartData.grand_total,
+                user_cart_id: cartData.id // Changed to user_cart_id
             }, {
                 headers: {
                     Authorization: `Bearer ${portal_token}`,

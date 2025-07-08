@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cart;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserCart;
 use App\Services\UserCartService;
 use Exception;
 use Illuminate\Http\Request;
@@ -145,11 +146,35 @@ class UserCartController extends Controller
             }
         } catch (Exception $e) {
             // Log the error (optional)
-            Log::error('Error fetching last cart record: '.$e->getMessage());
+            Log::error('Error fetching last cart record: ' . $e->getMessage());
 
             // Return a generic error response
             return response()->json([
                 'message' => 'An error occurred while fetching the cart record. Please try again later.',
+            ], 500);
+        }
+    }
+    public function getUserCartById($userCartId)
+    {
+        try {
+            $userId = Auth::id();
+            if (!$userId) {
+                return response()->json([
+                    'message' => 'Unauthorized: Please log in to proceed.',
+                ], 401);
+            }
+
+            $cart = $this->userCartService->getUserCartById($userCartId, $userId);
+
+            if ($cart) {
+                return response()->json($cart, 200);
+            } else {
+                return response()->json(['message' => 'No record found'], 404);
+            }
+        } catch (Exception $e) {
+            Log::error('Error fetching cart by ID: '.$e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while fetching the cart record.',
             ], 500);
         }
     }

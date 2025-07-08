@@ -99,7 +99,8 @@ const OrderModel = () => {
 
         const map = new window.google.maps.Map(mapRef.current, {
             zoom: 14,
-            disableDefaultUI: true, // This disables all default UI controls
+            disableDefaultUI: true,
+            gestureHandling: 'greedy',
             zoomControl: false,
             mapTypeControl: false,
             scaleControl: false,
@@ -120,6 +121,11 @@ const OrderModel = () => {
                 {
                     featureType: "road",
                     elementType: "labels.icon",
+                    stylers: [{ visibility: "off" }]
+                },
+                {
+                    featureType: "all",
+                    elementType: "labels",
                     stylers: [{ visibility: "off" }]
                 }
             ]
@@ -179,11 +185,29 @@ const OrderModel = () => {
             const midIndex = Math.floor(curve.length / 2);
             const midPoint = curve[midIndex];
 
-            new window.google.maps.InfoWindow({
-                content: `<div style="color: ${theme.palette.mode === 'dark' ? '#ffffff' : '#000000'}; padding: 4px; font-weight: bold;">${calculatedDistance.toFixed(2)} km</div>`,
+            const infoWindow = new window.google.maps.InfoWindow({
+                content: `<div style="background-color: ${theme.palette.mode === 'dark' ? '#333' : '#fff'};
+              color: ${theme.palette.mode === 'dark' ? '#fff' : '#000'};
+              padding: 4px 8px;
+              font-weight: bold;
+              border-radius: 4px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+              ${calculatedDistance.toFixed(2)} km
+              </div>`,
                 position: midPoint,
                 disableAutoPan: true
-            }).open(map);
+            });
+
+            // Open the InfoWindow
+            infoWindow.open(map);
+
+            // Completely remove the close button after rendering
+            infoWindow.addListener('domready', () => {
+                const closeButton = document.querySelector('.gm-ui-hover-effect');
+                if (closeButton) {
+                    closeButton.remove(); // Permanently delete the close button
+                }
+            });
         });
 
         setShopMarkers(newShopMarkers);
@@ -430,27 +454,27 @@ const OrderModel = () => {
                                     status={orderDetails?.status}
                                     imageSrc={
                                         orderDetails?.status === 'pending' ? "/image/order_pending.gif" :
-                                        orderDetails?.status === 'accepted' ? "/image/order_accept.gif" :
-                                        orderDetails?.status === 'preparing' ? "/image/order_preparing.gif" :
-                                        orderDetails?.status === 'on_the_way' ? "/image/order_on_the_way.gif" :
-                                        orderDetails?.status === 'reached' ? "/image/order_reached.gif" :
-                                        "/image/order_default.gif"
+                                            orderDetails?.status === 'accepted' ? "/image/order_accept.gif" :
+                                                orderDetails?.status === 'preparing' ? "/image/order_preparing.gif" :
+                                                    orderDetails?.status === 'on_the_way' ? "/image/order_on_the_way.gif" :
+                                                        orderDetails?.status === 'reached' ? "/image/order_reached.gif" :
+                                                            "/image/order_default.gif"
                                     }
                                     title={
                                         orderDetails?.status === 'pending' ? "Arriving in 20 minutes" :
-                                        orderDetails?.status === 'accepted' ? "Arriving in 15 minutes" :
-                                        orderDetails?.status === 'preparing' ? "Arriving in 12 minutes" :
-                                        orderDetails?.status === 'on_the_way' ? "Arriving in 10 minutes" :
-                                        orderDetails?.status === 'reached' ? "Arriving in your location" :
-                                        "Order in progress"
+                                            orderDetails?.status === 'accepted' ? "Arriving in 15 minutes" :
+                                                orderDetails?.status === 'preparing' ? "Arriving in 12 minutes" :
+                                                    orderDetails?.status === 'on_the_way' ? "Arriving in 10 minutes" :
+                                                        orderDetails?.status === 'reached' ? "Arriving in your location" :
+                                                            "Order in progress"
                                     }
                                     description={
                                         orderDetails?.status === 'pending' ? "Your order is Pending, the shops will accept it soon." :
-                                        orderDetails?.status === 'accepted' ? "Shops have accepted your order, assigning delivery partners soon." :
-                                        orderDetails?.status === 'preparing' ? "Shops are preparing your order. Delivery partners will be on the way soon." :
-                                        orderDetails?.status === 'on_the_way' ? "Your order is On The Way. Your delivery partners will arrive shortly." :
-                                        orderDetails?.status === 'reached' ? "Your order has Reached your location. The delivery partners will deliver it soon." :
-                                        "Your order is being processed"
+                                            orderDetails?.status === 'accepted' ? "Shops have accepted your order, assigning delivery partners soon." :
+                                                orderDetails?.status === 'preparing' ? "Shops are preparing your order. Delivery partners will be on the way soon." :
+                                                    orderDetails?.status === 'on_the_way' ? "Your order is On The Way. Your delivery partners will arrive shortly." :
+                                                        orderDetails?.status === 'reached' ? "Your order has Reached your location. The delivery partners will deliver it soon." :
+                                                            "Your order is being processed"
                                     }
                                     mapRef={googleMapsLoaded ? mapRef : null}
                                 />

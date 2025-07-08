@@ -109,6 +109,7 @@ Route::middleware('auth:sanctum')->prefix('portal')->group(function () {
         Route::post('/store_cart_details', [UserCartController::class, 'store']);
         Route::post('/update_address', [UserCartController::class, 'updateAddress']);
         Route::get('/last-record', [UserCartController::class, 'getLastCartRecord']);
+        Route::get('/get-by-id/{userCartId}', [UserCartController::class, 'getUserCartById']);
     });
 
     /* ---------------- ADDRESS ROUTES ---------------------- */
@@ -124,7 +125,7 @@ Route::middleware('auth:sanctum')->prefix('portal')->group(function () {
     Route::post('/user/orders/store_order_details', [OrderController::class, 'store']);
     Route::get('/user/get_order_details/{orderId}', [OrderController::class, 'getOrderCurrentUser']);
     Route::prefix('order')->group(function () {
-        Route::get('/order_summary', [OrderController::class, 'getOrderSummary']);
+        Route::get('/summary', [OrderController::class, 'getOrderSummary']);
         Route::get('/order_history', [OrderController::class, 'getOrderHistory']);
         Route::get('/order_details', [OrderController::class, 'getOrderDetails']);
         Route::get('/delivered_order_for_feedback', [OrderController::class, 'getDeliveredOrderForFeedback']);

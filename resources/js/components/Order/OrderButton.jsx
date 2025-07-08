@@ -27,21 +27,18 @@ const OrderButton = () => {
         }
 
         try {
-            const response = await axios.get(`${apiUrl}/portal/order/order_summary`, {
+            const response = await axios.get(`${apiUrl}/portal/order/summary`, { // Updated endpoint
                 headers: { Authorization: `Bearer ${portal_token}` }
             });
-            if (response.data.status) {
+
+            if (response.data.data) {
                 // Filter out delivered orders
-                const activeOrders = response.data.data.filter(order => order.status !== 'delivered');
+                const activeOrders = response.data.data.filter(order => order.order_status !== 'delivered');
                 setOrders(activeOrders);
-            } else {
-                if (response.data.message === "No orders found.") {
-                    setOrders([]);
-                }
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
-            setOrders([]);
+            // Don't set empty array here to preserve existing orders during temporary failures
         }
     }, [apiUrl]);
 
@@ -54,20 +51,26 @@ const OrderButton = () => {
 
         const channel = window.Echo.channel(`notification_order_status_for_user.${userId}`);
         channel.listen('.order.status.notification', (data) => {
-            // Only add to orders if not delivered
             if (data.status !== 'delivered') {
-                setOrders((prevOrders) => [data, ...prevOrders]);
+                setOrders((prevOrders) => {
+                    // Update existing order or add new one
+                    const existingIndex = prevOrders.findIndex(o => o.id === data.id);
+                    if (existingIndex >= 0) {
+                        const updated = [...prevOrders];
+                        updated[existingIndex] = data;
+                        return updated;
+                    }
+                    return [data, ...prevOrders];
+                });
             } else {
-                // Remove if order is delivered
                 setOrders((prevOrders) => prevOrders.filter(order => order.id !== data.id));
             }
         });
 
         fetchOrderSummary();
-        let intervalId;
+       let intervalId;
 
-        // Only set interval if there are active orders
-        if (orders.length > 0 && orders.some(order => order.status !== 'delivered')) {
+        if (orders.length > 0) {
             intervalId = setInterval(fetchOrderSummary, 60000);
         }
 
@@ -79,7 +82,7 @@ const OrderButton = () => {
             if (intervalId) clearInterval(intervalId);
             window.removeEventListener('orderChange', handleOrderChange);
         };
-    }, [fetchOrderSummary, orders.length]);
+    }, [fetchOrderSummary]);
 
     const handleOpenOrderModal = (orderId) => {
         openOrderModel(orderId);

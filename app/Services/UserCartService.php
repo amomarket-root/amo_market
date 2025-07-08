@@ -82,7 +82,7 @@ class UserCartService
             return false;
         } catch (\Exception $e) {
             // Log the error (optional)
-            Log::error('Error updating address in cart: '.$e->getMessage());
+            Log::error('Error updating address in cart: ' . $e->getMessage());
 
             return false;
         }
@@ -95,5 +95,13 @@ class UserCartService
             ->where('status', 1)
             ->latest() // Order by the latest created_at
             ->first(); // Get the first record in the ordered list
+    }
+
+    public function getUserCartById($userCartId, $userId)
+    {
+        return UserCart::with('user')
+            ->where('id', $userCartId)
+            ->where('user_id', $userId)
+            ->first();
     }
 }
