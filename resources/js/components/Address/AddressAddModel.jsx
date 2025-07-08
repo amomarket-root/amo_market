@@ -78,6 +78,7 @@ const AddressAddModel = ({ open, onClose, addressToEdit }) => {
     const [selectedLocation, setSelectedLocation] = useState(center);
     const [locationName, setLocationName] = useState('');
     const [options, setOptions] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
     const mapRef = useRef(null);
     const autocompleteService = useRef(null);
     const placesService = useRef(null);
@@ -246,6 +247,46 @@ const AddressAddModel = ({ open, onClose, addressToEdit }) => {
         }));
     };
 
+    const geocodeLatLng = useCallback((lat, lng) => {
+        if (!window.google || !window.google.maps) return;
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                setLocationName(results[0].formatted_address);
+                const addressComponents = results[0].address_components;
+
+                const state = addressComponents.find((component) =>
+                    component.types.includes('administrative_area_level_1')
+                )?.long_name;
+
+                const city = addressComponents.find((component) =>
+                    component.types.includes('locality')
+                )?.long_name;
+
+                const pin_code = addressComponents.find((component) =>
+                    component.types.includes('postal_code')
+                )?.long_name;
+
+                setFormData(prevData => ({
+                    ...prevData,
+                    latitude: lat,
+                    longitude: lng,
+                    full_address: results[0].formatted_address,
+                    location: results[0].formatted_address,
+                    state: state || '',
+                    city: city || '',
+                    pin_code: pin_code || '',
+                }));
+
+                // Clear validation errors for the updated fields
+                clearValidationErrors(['location', 'state', 'city', 'pin_code']);
+            } else {
+                setLocationName('Unknown location');
+                showSnackbar("Could not determine address for selected location", { severity: 'error' }, 2000);
+            }
+        });
+    }, [showSnackbar]);
+
     const handleLocationConfirm = useCallback((locationData) => {
         const updatedFields = {
             latitude: locationData.lat,
@@ -272,6 +313,18 @@ const AddressAddModel = ({ open, onClose, addressToEdit }) => {
         const lng = event.latLng.lng();
         setSelectedLocation({ lat, lng });
         geocodeLatLng(lat, lng);
+    }, [geocodeLatLng]);
+
+    const handleMarkerDragEnd = useCallback((event) => {
+        setIsDragging(false);
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+        setSelectedLocation({ lat, lng });
+        geocodeLatLng(lat, lng);
+    }, [geocodeLatLng]);
+
+    const handleMarkerDragStart = useCallback(() => {
+        setIsDragging(true);
     }, []);
 
     const handleCurrentLocation = useCallback(() => {
@@ -297,34 +350,7 @@ const AddressAddModel = ({ open, onClose, addressToEdit }) => {
             setLocationName("Geolocation is not supported by this browser");
             showSnackbar("Geolocation is not supported by your browser.", { severity: 'error' }, 2000);
         }
-    }, []);
-
-    const geocodeLatLng = useCallback((lat, lng) => {
-        if (!window.google || !window.google.maps) return;
-        const geocoder = new window.google.maps.Geocoder();
-        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-            if (status === 'OK' && results[0]) {
-                setLocationName(results[0].formatted_address);
-                handleLocationConfirm({
-                    lat,
-                    lng,
-                    fullAddress: results[0].formatted_address,
-                    state: results[0].address_components.find((component) =>
-                        component.types.includes('administrative_area_level_1')
-                    )?.long_name || '',
-                    city: results[0].address_components.find((component) =>
-                        component.types.includes('locality')
-                    )?.long_name || '',
-                    pin_code: results[0].address_components.find((component) =>
-                        component.types.includes('postal_code')
-                    )?.long_name || '',
-                });
-            } else {
-                setLocationName('Unknown location');
-                showSnackbar("Could not determine address for selected location", { severity: 'error' }, 2000);
-            }
-        });
-    }, [handleLocationConfirm]);
+    }, [geocodeLatLng, showSnackbar]);
 
     const handleInputChange = useCallback(
         debounce((event, newInputValue) => {
@@ -501,13 +527,18 @@ const AddressAddModel = ({ open, onClose, addressToEdit }) => {
                                     options={{
                                         disableDefaultUI: true,
                                         zoomControl: true,
+                                        gestureHandling: 'greedy',
+                                        clickableIcons: false,
                                     }}
                                 >
                                     {selectedLocation && (
                                         <Marker
                                             position={selectedLocation}
+                                            draggable={true}
+                                            onDragEnd={handleMarkerDragEnd}
+                                            onDragStart={handleMarkerDragStart}
                                             icon={{
-                                                url: '/image/location_pin.gif',
+                                                url: '/image/location_pin.webp',
                                                 scaledSize: new window.google.maps.Size(50, 50),
                                                 anchor: new window.google.maps.Point(25, 50)
                                             }}
