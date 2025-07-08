@@ -326,7 +326,7 @@ const CartModal = () => {
                                 position: 'fixed',
                                 right: 0,
                                 margin: 0,
-                                width: '38%',
+                                width: '35%',
                                 height: '100vh',
                                 maxHeight: '100vh',
                             },

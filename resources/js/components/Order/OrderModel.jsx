@@ -423,7 +423,7 @@ const OrderModel = () => {
                 onClose={closeOrderModel}
                 TransitionComponent={Transition}
                 keepMounted
-                sx={!isMobile ? { "& .MuiDialog-paper": { position: "fixed", right: 0, margin: 0, width: "38%", height: "100vh", maxHeight: "100vh" } } : {}}
+                sx={!isMobile ? { "& .MuiDialog-paper": { position: "fixed", right: 0, margin: 0,  width: '35%', height: "100vh", maxHeight: "100vh" } } : {}}
             >
                 <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
                     <AppBar sx={{ position: "sticky", top: 0, backgroundColor: "#fff", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", color: "transparent", borderBottomLeftRadius: "10px", borderBottomRightRadius: "10px", zIndex: 10 }}>
