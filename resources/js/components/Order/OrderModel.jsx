@@ -147,7 +147,7 @@ const OrderModel = () => {
                 map: map,
                 title: shop.name,
                 icon: {
-                    url: `/image/shop_location.gif`,
+                    url: `/image/shop_location.webp`,
                     scaledSize: new window.google.maps.Size(50, 50),
                     anchor: new window.google.maps.Point(25, 35)
                 },
@@ -168,7 +168,7 @@ const OrderModel = () => {
             // Create a polyline with gradient color
             curve.forEach((point, i) => {
                 if (i === 0) return;
-                const color = interpolateColor('#f27474', '#10d915', i / curve.length);
+                const color = interpolateColor('#9F63FF', '#10d915', i / curve.length);
 
                 const polyline = new window.google.maps.Polyline({
                     path: [curve[i - 1], point],
@@ -219,7 +219,7 @@ const OrderModel = () => {
             map: map,
             title: "Your Location",
             icon: {
-                url: `/image/user_location.gif`,
+                url: `/image/user_location.webp`,
                 scaledSize: new window.google.maps.Size(50, 50),
                 anchor: new window.google.maps.Point(25, 35)
             },
@@ -423,7 +423,7 @@ const OrderModel = () => {
                 onClose={closeOrderModel}
                 TransitionComponent={Transition}
                 keepMounted
-                sx={!isMobile ? { "& .MuiDialog-paper": { position: "fixed", right: 0, margin: 0,  width: '35%', height: "100vh", maxHeight: "100vh" } } : {}}
+                sx={!isMobile ? { "& .MuiDialog-paper": { position: "fixed", right: 0, margin: 0, width: '35%', height: "100vh", maxHeight: "100vh" } } : {}}
             >
                 <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
                     <AppBar sx={{ position: "sticky", top: 0, backgroundColor: "#fff", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", color: "transparent", borderBottomLeftRadius: "10px", borderBottomRightRadius: "10px", zIndex: 10 }}>

@@ -15,7 +15,7 @@ import TextField from '@mui/material/TextField';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Autocomplete from '@mui/material/Autocomplete';
 import { debounce } from '@mui/material/utils';
 import MyLocationTwoToneIcon from '@mui/icons-material/MyLocationTwoTone';
@@ -44,6 +44,7 @@ const MapAddressModel = ({ open, onClose, onConfirm }) => {
     const [selectedLocation, setSelectedLocation] = useState(center);
     const [locationName, setLocationName] = useState('');
     const [options, setOptions] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
     const mapRef = useRef(null);
     const autocompleteService = useRef(null);
     const placesService = useRef(null);
@@ -78,6 +79,18 @@ const MapAddressModel = ({ open, onClose, onConfirm }) => {
         setSelectedLocation({ lat, lng });
         geocodeLatLng(lat, lng);
     }, [geocodeLatLng]);
+
+    const handleMarkerDragEnd = useCallback((event) => {
+        setIsDragging(false);
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+        setSelectedLocation({ lat, lng });
+        geocodeLatLng(lat, lng);
+    }, [geocodeLatLng]);
+
+    const handleMarkerDragStart = useCallback(() => {
+        setIsDragging(true);
+    }, []);
 
     const handleCurrentLocation = useCallback(() => {
         if (navigator.geolocation) {
@@ -274,26 +287,22 @@ const MapAddressModel = ({ open, onClose, onConfirm }) => {
                             options={{
                                 disableDefaultUI: true,
                                 zoomControl: true,
+                                gestureHandling: 'greedy', // Changed this line to fix the scroll/zoom issue
+                                clickableIcons: false,
                             }}
                         >
                             {selectedLocation && (
-                                <div
-                                    style={{
-                                        position: "absolute",
-                                        left: "50%",
-                                        top: "50%",
-                                        transform: "translate(-50%, -50%)",
+                                <Marker
+                                    position={selectedLocation}
+                                    draggable={true}
+                                    onDragEnd={handleMarkerDragEnd}
+                                    onDragStart={handleMarkerDragStart}
+                                    icon={{
+                                        url: "/image/location_pin.webp",
+                                        scaledSize: new window.google.maps.Size(60, 60),
+                                        anchor: new window.google.maps.Point(30, 60)
                                     }}
-                                >
-                                    <img
-                                        src="/image/location_pin.gif"
-                                        alt="User Location"
-                                        style={{
-                                            width: "70px",
-                                            height: "70px",
-                                        }}
-                                    />
-                                </div>
+                                />
                             )}
                         </GoogleMap>
                     </Box>

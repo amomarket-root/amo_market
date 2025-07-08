@@ -5,7 +5,6 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import AccountCircleTwoToneIcon from '@mui/icons-material/AccountCircleTwoTone';
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import { useTheme } from '@mui/material/styles';
@@ -111,7 +110,7 @@ const Header = () => {
                             <Grid item xs={6} display="flex" justifyContent="flex-end">
                                 <IconButton sx={{ color: '#5b5858' }} color="inherit" onClick={handleAccountButtonClick}>
                                     <img
-                                        src="/image/account_avatar.gif"
+                                        src="/image/account_avatar.webp"
                                         alt="Profile"
                                         style={{ width: 40, height: 40 }}
                                         loading="eager"
@@ -151,11 +150,18 @@ const Header = () => {
                         {/* Right Section - Account & Cart */}
                         <Grid item xs={3} md={3} lg={3} xl={3} display="flex" justifyContent="flex-end" alignItems="center">
                             <IconButton sx={{ color: '#5b5858', mr: 2 }} onClick={handleAccountButtonClick}>
-                                <AccountCircleTwoToneIcon fontSize="large" />
+                                <img
+                                    src="/image/account_avatar.webp"
+                                    alt="Profile"
+                                    style={{ width: 35, height: 35, borderRadius: '50%' }}
+                                    loading="eager"
+                                    decoding="async"
+                                />
                                 <Typography variant="body1" sx={{ ml: 1 }}>
                                     {localStorage.getItem("portal_token") ? "Account" : "Login"}
                                 </Typography>
                             </IconButton>
+
                             <IconButton
                                 style={{ backgroundColor: 'green', borderRadius: 8, padding: '6px 12px' }}
                                 onClick={handleCartButtonClick}

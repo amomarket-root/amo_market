@@ -9,8 +9,6 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import GoogleIcon from "@mui/icons-material/Google";
-import FacebookIcon from "@mui/icons-material/Facebook";
 import Avatar from "@mui/material/Avatar";
 import OTPVerificationModal from "./OTPVerificationModal";
 import { useNavigate } from "react-router-dom";
@@ -29,10 +27,24 @@ const LoginModal = ({ open, onClose }) => {
     const showSnackbar = useSnackbar();
     const navigate = useNavigate();
 
+    const checkAlreadyLoggedIn = () => {
+        const token = localStorage.getItem("portal_token");
+        const userId = localStorage.getItem("user_id");
+        return token && userId;
+    };
+
     const handleGoogleLogin = () => {
         try {
+            if (checkAlreadyLoggedIn()) {
+                showAlert({
+                    title: "Already Logged In",
+                    text: "Please logout first before logging in again",
+                    icon: "warning",
+                });
+                return;
+            }
             localStorage.removeItem("portal_token");
-            localStorage.removeItem("user");
+            localStorage.removeItem("user_id");
             window.location.href = `${apiUrl}/login/google`;
         } catch (error) {
             showAlert({
@@ -45,6 +57,16 @@ const LoginModal = ({ open, onClose }) => {
 
     const handleFacebookLogin = () => {
         try {
+            if (checkAlreadyLoggedIn()) {
+                showAlert({
+                    title: "Already Logged In",
+                    text: "Please logout first before logging in again",
+                    icon: "warning",
+                });
+                return;
+            }
+            localStorage.removeItem("portal_token");
+            localStorage.removeItem("user_id");
             window.location.href = `${apiUrl}/portal/authenticate/facebook`;
         } catch (error) {
             showAlert({
@@ -87,6 +109,15 @@ const LoginModal = ({ open, onClose }) => {
         e.preventDefault();
         if (!validateForm()) return;
 
+        if (checkAlreadyLoggedIn()) {
+            showAlert({
+                title: "Already Logged In",
+                text: "Please logout first before logging in again",
+                icon: "warning",
+            });
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -116,7 +147,7 @@ const LoginModal = ({ open, onClose }) => {
             } else {
                 showSnackbar(
                     error.response?.data?.message ||
-                        "An error occurred during login",
+                    "An error occurred during login",
                     { severity: "error" },
                     2000
                 );
@@ -226,7 +257,7 @@ const LoginModal = ({ open, onClose }) => {
                             variant="contained"
                             color="success"
                             fullWidth
-                            sx={{ borderRadius: "6px", height: 42, mt: 0.5 }}
+                            sx={{ borderRadius: "6px", height: 42, mt: 0.5, color: "white" }}
                             disabled={isLoading}
                         >
                             {isLoading ? "Loading..." : "Continue"}
@@ -241,39 +272,51 @@ const LoginModal = ({ open, onClose }) => {
                     gap={8}
                     sx={{ mb: 1 }}
                 >
-                    <Button
-                        variant="outlined"
+                    <IconButton
+                        onClick={handleGoogleLogin}
                         sx={{
-                            borderRadius: "50%",
                             width: 65,
                             height: 65,
-                            borderColor: "#f27474",
-                            color: "#f27474",
                             "&:hover": {
                                 backgroundColor: "rgba(242, 116, 116, 0.1)",
                             },
                         }}
-                        onClick={handleGoogleLogin}
                     >
-                        <GoogleIcon fontSize="large" />
-                    </Button>
+                        <Avatar
+                            src="/image/auth/google_logo.webp"
+                            alt="Google"
+                            loading="eager"
+                            decoding="async"
+                            sx={{
+                                width: 50,
+                                height: 50,
+                                border: "1px solid #f27474",
+                            }}
+                        />
+                    </IconButton>
 
-                    <Button
-                        variant="outlined"
+                    <IconButton
+                        onClick={handleFacebookLogin}
                         sx={{
-                            borderRadius: "50%",
                             width: 65,
                             height: 65,
-                            borderColor: "#0f85d9",
-                            color: "#0f85d9",
                             "&:hover": {
                                 backgroundColor: "rgba(15, 133, 217, 0.1)",
                             },
                         }}
-                        onClick={handleFacebookLogin}
                     >
-                        <FacebookIcon fontSize="large" />
-                    </Button>
+                        <Avatar
+                            src="/image/auth/facebook_logo.webp"
+                            alt="Facebook"
+                            loading="eager"
+                            decoding="async"
+                            sx={{
+                                width: 50,
+                                height: 50,
+                                border: "1px solid #0f85d9",
+                            }}
+                        />
+                    </IconButton>
                 </Box>
 
                 <Box sx={{ px: 2, pb: 2, textAlign: "center" }}>
