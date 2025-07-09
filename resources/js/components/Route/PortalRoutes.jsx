@@ -83,15 +83,13 @@ const PortalRoutes = () => {
                             <Route path="/delivery-info" element={<Layout><DeliveryPageInfo /></Layout>} />
                             {/* CheckOut Routes */}
                             <Route path="/checkout" element={
-                                <Layout>
-                                    <CartButtonLayout>
-                                        <OrderButtonLayout>
-                                            <CheckoutPage />
-                                        </OrderButtonLayout>
-                                    </CartButtonLayout>
+                                <>
+                                    <OrderButtonLayout>
+                                        <CheckoutPage />
+                                    </OrderButtonLayout>
                                     <CartModel />
                                     <OrderModel />
-                                </Layout>
+                                </>
                             } />
                             {/* Product Routes */}
                             <Route path="/all_product/:categoryId" element={

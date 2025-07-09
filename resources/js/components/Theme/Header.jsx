@@ -19,7 +19,7 @@ import axios from 'axios';
 const Header = () => {
     const navigate = useNavigate();
     const [openLoginModal, setOpenLoginModal] = useState(false);
-    const { openCartModal, cartSummary } = useCart();
+    const { openCartModal, cartSummary, setCartSummary } = useCart(); // Added setCartSummary here
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const apiUrl = import.meta.env.VITE_API_URL;
@@ -171,10 +171,18 @@ const Header = () => {
                             </IconButton>
 
                             <IconButton
-                                style={{ backgroundColor: '#10d915', borderRadius: 8, padding: '6px 12px' }}
+                                style={{
+                                    backgroundColor: cartSummary?.totalQuantity > 0 ? '#10d915' : '#bdbdbd',
+                                    borderRadius: 8,
+                                    padding: '6px 12px',
+                                    transition: 'background-color 0.3s ease'
+                                }}
                                 onClick={handleCartButtonClick}
                             >
-                                <Badge badgeContent={cartSummary.totalQuantity || 0} color="primary">
+                                <Badge
+                                    badgeContent={cartSummary?.totalQuantity || 0}
+                                    color={cartSummary?.totalQuantity > 0 ? "primary" : "default"}
+                                >
                                     <ShoppingCartIcon sx={{ color: "white" }} />
                                 </Badge>
                                 <Typography variant="body1" sx={{ color: "white", ml: 1 }}>

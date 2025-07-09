@@ -613,7 +613,7 @@ const AddressAddModel = ({ open, onClose, addressToEdit }) => {
                                 <Grid container spacing={2}>
                                     {[...Array(10)].map((_, index) => (
                                         <Grid item xs={12} key={index}>
-                                            <Skeleton variant="rectangular" height={40} />
+                                            <Skeleton variant="rectangular" height={35}  sx={{borderRadius:3}} />
                                         </Grid>
                                     ))}
                                 </Grid>

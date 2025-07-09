@@ -524,7 +524,7 @@ const CartModal = () => {
                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                             <img
-                                                src="/image/add_location.gif"
+                                                src="/image/add_location.webp"
                                                 alt="Location Icon"
                                                 style={{ width: 40, height: 40, marginRight: 8 }}
                                             />

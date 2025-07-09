@@ -11,10 +11,10 @@ const CheckoutPage = () => {
     const showAlert = useSweetAlert();
     const apiUrl = import.meta.env.VITE_API_URL;
     const [isProcessing, setIsProcessing] = useState(true);
-    const processedOrderId = useRef(null); // Track processed orders
+    const processedOrderId = useRef(null);
 
     useEffect(() => {
-        let isMounted = true; // Track component mount state
+        let isMounted = true;
 
         const processPayment = async () => {
             const params = new URLSearchParams(location.search);
@@ -33,7 +33,6 @@ const CheckoutPage = () => {
                 return;
             }
 
-            // Prevent duplicate processing
             if (processedOrderId.current === orderId) {
                 setIsProcessing(false);
                 return;
@@ -45,7 +44,6 @@ const CheckoutPage = () => {
                     throw new Error("Please login to continue");
                 }
 
-                // Verify payment with backend
                 const verifyResponse = await axios.get(`${apiUrl}/portal/cashfree/success`, {
                     params: {
                         order_id: orderId,
@@ -60,7 +58,6 @@ const CheckoutPage = () => {
                     throw new Error(verifyResponse.data.message || 'Payment verification failed');
                 }
 
-                // Get user cart data
                 const cartResponse = await axios.get(`${apiUrl}/portal/user/cart/get-by-id/${userCartId}`, {
                     headers: { Authorization: `Bearer ${portal_token}` },
                 });
@@ -73,7 +70,6 @@ const CheckoutPage = () => {
                 const cartItems = JSON.parse(cartData.cart_items);
                 const shopIds = [...new Set(cartItems.map(item => item.shop_id))];
 
-                // Prepare order payload
                 const orderPayload = {
                     total_amount: cartData.grand_total,
                     currency: "INR",
@@ -87,7 +83,6 @@ const CheckoutPage = () => {
                     cart_items: cartItems
                 };
 
-                // Create order in backend
                 const orderResponse = await axios.post(
                     `${apiUrl}/portal/user/orders/store_order_details`,
                     orderPayload,
@@ -95,20 +90,32 @@ const CheckoutPage = () => {
                 );
 
                 if (orderResponse.data?.order?.id && isMounted) {
-                    processedOrderId.current = orderId; // Mark as processed
-                    window.history.replaceState({}, document.title, '/');
+                    processedOrderId.current = orderId;
+
+                    // ✅ First navigate to home
+                    navigate('/');
+
+                    // ✅ Show alert after navigating
+                    setTimeout(() => {
+                        showAlert({
+                            title: "Order Generated!",
+                            text: `Your order has been generated successfully. Please wait for shop confirmation.`,
+                            icon: "success",
+                            timer: 4000,
+                            showConfirmButton: false,
+                            willClose: () => {
+                                // ✅ Open order model after alert is closed
+                                openOrderModel(orderResponse.data.order.id);
+                            }
+                        });
+
+                        // ✅ If willClose doesn't trigger in some cases, use fallback timeout
+                        setTimeout(() => {
+                            openOrderModel(orderResponse.data.order.id);
+                        }, 4100); // A bit more than alert timer to ensure fallback
+                    }, 300); // Slight delay to ensure page has navigated
+
                     setIsProcessing(false);
-
-                    // Open order model immediately
-                    openOrderModel(orderResponse.data.order.id);
-
-                    // Show success alert without delay
-                    showAlert({
-                        title: "Order Generated!",
-                        text: `Your order #${orderResponse.data.order.id} has been placed successfully.`,
-                        icon: "success",
-                        timer: 4000
-                    });
                 } else {
                     throw new Error("Failed to create order");
                 }
@@ -129,7 +136,7 @@ const CheckoutPage = () => {
         processPayment();
 
         return () => {
-            isMounted = false; // Cleanup on unmount
+            isMounted = false;
         };
     }, [location.search, navigate, openOrderModel, showAlert, apiUrl]);
 
