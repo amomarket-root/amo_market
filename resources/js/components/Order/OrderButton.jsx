@@ -68,7 +68,7 @@ const OrderButton = () => {
         });
 
         fetchOrderSummary();
-       let intervalId;
+        let intervalId;
 
         if (orders.length > 0) {
             intervalId = setInterval(fetchOrderSummary, 60000);
@@ -115,7 +115,7 @@ const OrderButton = () => {
         }}>
             <Badge
                 badgeContent={orders.length > 1 ? orders.length : null}
-                color="error"
+                color="success"
                 overlap="circular"
                 anchorOrigin={{
                     vertical: 'top',
@@ -124,9 +124,9 @@ const OrderButton = () => {
             >
                 <Fab
                     variant="extended"
-                    color="error"
+                    color="primary"
                     sx={{
-                        backgroundColor: '#f27474',
+                        backgroundColor: '#9F63FF',
                         display: 'flex',
                         alignItems: 'flex-start',
                         minWidth: isMobile ? '360px' : '400px',
@@ -171,12 +171,12 @@ const OrderButton = () => {
                                             size="small"
                                             sx={{
                                                 backgroundColor: 'white',
-                                                color: 'red',
+                                                color: '#9F63FF',
                                                 fontWeight: 'bold',
                                                 borderRadius: '20px',
                                                 ml: 2,
                                                 '&:hover': {
-                                                    backgroundColor: '#f5f5f5',
+                                                    backgroundColor: '#8946F8',
                                                 }
                                             }}
                                             onClick={() => handleOpenOrderModal(order.id)}
@@ -199,7 +199,7 @@ const OrderButton = () => {
                         >
                             <Box
                                 sx={{
-                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                    backgroundColor: '#ae8ee2',
                                     padding: '4px',
                                     borderRadius: '20%',
                                     display: 'flex',
@@ -227,12 +227,15 @@ const OrderButton = () => {
                             </Box>
                             <Box
                                 sx={{
-                                    color: 'red',
+                                    color: '#9F63FF',
                                     fontWeight: 'bold',
                                     fontSize: isMobile ? '14px' : '16px',
                                     padding: '4px 16px',
                                     borderRadius: '20px',
                                     backgroundColor: 'white',
+                                    '&:hover': {
+                                        backgroundColor: '#8946F8',
+                                    }
                                 }}
                             >
                                 View Order
@@ -259,13 +262,13 @@ const OrderButton = () => {
                             boxShadow: 2,
                             padding: '6px',
                             '&:hover': {
-                                backgroundColor: '#f5f5f5',
+                                backgroundColor: '#8946F8',
                             },
                         }}
                     >
                         <Badge
                             badgeContent={orders.length}
-                            color="error"
+                            color="primary"
                             sx={{
                                 '& .MuiBadge-badge': {
                                     fontSize: '0.7rem',
@@ -276,7 +279,7 @@ const OrderButton = () => {
                                 },
                             }}
                         >
-                            <NotificationsIcon color="error" />
+                            <NotificationsIcon color="primary" />
                         </Badge>
                     </IconButton>
                 </Box>

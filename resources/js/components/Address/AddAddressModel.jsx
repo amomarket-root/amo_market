@@ -19,7 +19,7 @@ import FormLabel from '@mui/material/FormLabel';
 import HomeTwoToneIcon from '@mui/icons-material/HomeTwoTone';
 import HomeWorkTwoToneIcon from '@mui/icons-material/HomeWorkTwoTone';
 import OtherHousesTwoToneIcon from '@mui/icons-material/OtherHousesTwoTone';
-import AddLocationAltTwoToneIcon from '@mui/icons-material/AddLocationAltTwoTone';
+import MyLocationTwoToneIcon from '@mui/icons-material/MyLocationTwoTone';
 import MapAddressModel from './MapAddressModel';
 import axios from 'axios';
 import Skeleton from '@mui/material/Skeleton';
@@ -399,16 +399,16 @@ const AddAddressModel = ({ open, onClose, addressToEdit }) => {
                                         fullWidth
                                         variant="contained"
                                         sx={{
-                                            backgroundColor: "#7134df",
+                                            backgroundColor: "#9F63FF",
                                             '&:hover': {
-                                                backgroundColor: '#5a1bcc',
+                                                backgroundColor: '#7c48d0',
                                             },
                                             height: '40px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                         }}
-                                        startIcon={<AddLocationAltTwoToneIcon />}
+                                        startIcon={<MyLocationTwoToneIcon />}
                                         onClick={handleOpenMapAddressModel}
                                     >
                                         Your Location

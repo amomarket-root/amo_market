@@ -70,7 +70,7 @@ const CartButton = () => {
                         top: '90%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        backgroundColor: 'green',
+                         backgroundColor: '#0cc10f',
                         display: 'flex',
                         alignItems: 'center',
                         zIndex: 2000,
