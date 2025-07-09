@@ -7,11 +7,10 @@ import { useCart } from './CartContext';
 import axios from 'axios';
 
 const CartButton = () => {
-    const { cartModalOpen, openCartModal, cartItemsCount } = useCart();
+    const { cartModalOpen, openCartModal, cartSummary, setCartSummary } = useCart();
     const theme = useTheme();
     const apiUrl = import.meta.env.VITE_API_URL;
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const [cartSummary, setCartSummary] = useState({ totalQuantity: 0, totalAmount: 0 });
     const [cartVisible, setCartVisible] = useState(false);
 
     const fetchCartSummary = useCallback(async () => {
@@ -36,7 +35,7 @@ const CartButton = () => {
             console.error('Error fetching cart summary:', error);
             setCartVisible(false);
         }
-    }, [apiUrl]);
+    }, [apiUrl, setCartSummary]);
 
     useEffect(() => {
         const userId = localStorage.getItem('user_id');
@@ -45,7 +44,12 @@ const CartButton = () => {
         fetchCartSummary();
 
         const channel = window.Echo.channel(`cart_update.${userId}`)
-            .listen('.cart.update', fetchCartSummary);
+            .listen('.cart.update', (data) => {
+                if (data?.cartSummary) {
+                    setCartSummary(data.cartSummary);
+                    setCartVisible(data.cartSummary.totalQuantity > 0);
+                }
+            });
 
         window.addEventListener('cartChange', fetchCartSummary);
 
@@ -53,7 +57,7 @@ const CartButton = () => {
             window.Echo.leave(`cart_update.${userId}`);
             window.removeEventListener('cartChange', fetchCartSummary);
         };
-    }, [fetchCartSummary, cartItemsCount]);
+    }, [fetchCartSummary]);
 
     return (
         <>

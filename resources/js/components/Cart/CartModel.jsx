@@ -34,7 +34,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 const CartModal = () => {
-    const { cartModalOpen, closeCartModal, setCartItemsCount } = useCart();
+    const { cartModalOpen, closeCartModal, cartSummary, setCartSummary } = useCart();
     const { latitude: userLat, longitude: userLng } = useContext(LocationContext);
     const showAlert = useSweetAlert();
     const theme = useTheme();
@@ -57,7 +57,7 @@ const CartModal = () => {
     const [loading, setLoading] = useState(true);
     const [distance, setDistance] = useState(0);
     const [baseDeliveryCharge, setBaseDeliveryCharge] = useState(10);
-    const [minDeliveryCharge, setMinDeliveryCharge] = useState(20); // Minimum delivery charge
+    const [minDeliveryCharge, setMinDeliveryCharge] = useState(20);
     const [distanceWarning, setDistanceWarning] = useState(false);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -78,15 +78,10 @@ const CartModal = () => {
     };
 
     const calculateDeliveryCharge = (distance) => {
-        // Minimum charge for distances <= 1 km
         if (distance <= 1) {
             return minDeliveryCharge;
         }
-
-        // For distances > 1 km, charge base rate * distance
         const charge = Math.round(baseDeliveryCharge * distance);
-
-        // Ensure charge is at least the minimum
         return Math.max(charge, minDeliveryCharge);
     };
 
@@ -103,24 +98,28 @@ const CartModal = () => {
                 }
             });
             const data = response.data.data;
-            console.log('Cart data:', data);
             setCartItems(data.cartItems ?? []);
-            setCartItemsCount(data.cartItems?.length ?? 0);
             setTotalAmount(data.totalAmount ?? 0);
             setDeliveryCharge(data.deliveryCharge ?? 0);
             setPlatformCharge(data.platformCharge ?? 0);
             setGrandTotal(data.grandTotal ?? 0);
             setEmptyCart(false);
+
+            // Update cart summary in context
+            setCartSummary({
+                totalQuantity: data.cartItems?.length ?? 0,
+                totalAmount: data.totalAmount ?? 0
+            });
         } catch (error) {
-            const errorData = error.response.data;
-            if (errorData.status === false || errorData.message === 'Your cart is empty') {
+            const errorData = error.response?.data;
+            if (errorData?.status === false || errorData?.message === 'Your cart is empty') {
                 setEmptyCart(true);
-                setCartItemsCount(0);
+                setCartSummary({ totalQuantity: 0, totalAmount: 0 });
             }
         } finally {
             setLoading(false);
         }
-    }, [apiUrl, setCartItemsCount]);
+    }, [apiUrl, setCartSummary]);
 
     useEffect(() => {
         if (cartModalOpen) {
@@ -144,8 +143,17 @@ const CartModal = () => {
 
                 const updatedItems = cartItems.filter((item) => item.id !== id);
                 setCartItems(updatedItems);
-                setCartItemsCount(updatedItems.length);
                 setEmptyCart(updatedItems.length === 0);
+
+                // Update cart summary
+                const summaryResponse = await axios.get(`${apiUrl}/portal/cart/summary`, {
+                    headers: { Authorization: `Bearer ${portal_token}` }
+                });
+                if (summaryResponse.data?.data) {
+                    setCartSummary(summaryResponse.data.data);
+                } else {
+                    setCartSummary({ totalQuantity: 0, totalAmount: 0 });
+                }
                 return;
             } catch (err) {
                 console.error('Error removing service from cart:', err);
@@ -159,15 +167,24 @@ const CartModal = () => {
         const filteredItems = updatedItems.filter((item) => item.quantity > 0);
 
         setCartItems(filteredItems);
-        setCartItemsCount(filteredItems.length);
+        setEmptyCart(filteredItems.length === 0);
 
         try {
+            const portal_token = localStorage.getItem('portal_token');
             const itemToUpdate = filteredItems.find(item => item.id === id) || item;
             await addToCart(itemToUpdate.product_id, delta, 'product');
-            setEmptyCart(filteredItems.length === 0);
+
+            // Update cart summary
+            const summaryResponse = await axios.get(`${apiUrl}/portal/cart/summary`, {
+                headers: { Authorization: `Bearer ${portal_token}` }
+            });
+            if (summaryResponse.data?.data) {
+                setCartSummary(summaryResponse.data.data);
+            } else {
+                setCartSummary({ totalQuantity: 0, totalAmount: 0 });
+            }
         } catch (err) {
             setCartItems(cartItems);
-            setCartItemsCount(cartItems.length);
             console.error('Error updating cart item quantity:', err);
         }
     };
@@ -198,7 +215,6 @@ const CartModal = () => {
             numericTipAmount;
 
         setGrandTotal(newGrandTotal.toFixed(2));
-
     }, [cartItems, deliveryCharge, platformCharge, feedingIndiaDonation, indiaArmedForceContribution, tipAmount]);
 
     const handleOpenAddressModel = () => {

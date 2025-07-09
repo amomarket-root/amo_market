@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -19,13 +19,12 @@ import axios from 'axios';
 const Header = () => {
     const navigate = useNavigate();
     const [openLoginModal, setOpenLoginModal] = useState(false);
-    const [cartQuantity, setCartQuantity] = useState(0);
-    const { openCartModal } = useCart();
+    const { openCartModal, cartSummary } = useCart();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     const fetchCartQuantity = async () => {
-        const apiUrl = import.meta.env.VITE_API_URL;
         const portal_token = localStorage.getItem('portal_token');
         if (!portal_token) {
             console.log('User is not authenticated');
@@ -36,7 +35,9 @@ const Header = () => {
             const response = await axios.get(`${apiUrl}/portal/cart/summary`, {
                 headers: { Authorization: `Bearer ${portal_token}` },
             });
-            setCartQuantity(response.data?.data?.totalQuantity || 0);
+            if (response.data?.data) {
+                setCartSummary(response.data.data);
+            }
         } catch (err) {
             console.error('Error fetching cart quantity:', err);
         }
@@ -48,7 +49,9 @@ const Header = () => {
             // Try WebSocket first
             window.Echo.channel(`cart_update.${userId}`)
                 .listen('.cart.update', (data) => {
-                    setCartQuantity(data?.cartSummary?.totalQuantity);
+                    if (data?.cartSummary) {
+                        setCartSummary(data.cartSummary);
+                    }
                 })
                 .error((err) => {
                     console.error('WebSocket error:', err);
@@ -60,10 +63,15 @@ const Header = () => {
         // Fetch cart quantity on mount as a fallback
         fetchCartQuantity();
 
+        // Listen for cart change events
+        const handleCartChange = () => fetchCartQuantity();
+        window.addEventListener('cartChange', handleCartChange);
+
         return () => {
             if (userId) {
                 window.Echo.leave(`cart_update.${userId}`);
             }
+            window.removeEventListener('cartChange', handleCartChange);
         };
     }, []);
 
@@ -163,10 +171,10 @@ const Header = () => {
                             </IconButton>
 
                             <IconButton
-                                style={{ backgroundColor: 'green', borderRadius: 8, padding: '6px 12px' }}
+                                style={{ backgroundColor: '#10d915', borderRadius: 8, padding: '6px 12px' }}
                                 onClick={handleCartButtonClick}
                             >
-                                <Badge badgeContent={cartQuantity} color="secondary">
+                                <Badge badgeContent={cartSummary.totalQuantity || 0} color="primary">
                                     <ShoppingCartIcon sx={{ color: "white" }} />
                                 </Badge>
                                 <Typography variant="body1" sx={{ color: "white", ml: 1 }}>

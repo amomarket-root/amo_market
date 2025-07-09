@@ -16,6 +16,7 @@ import {
     updateLocalCartItems,
     getCartSummary
 } from '../Cart/cartHelpers';
+import { useCart } from '../Cart/CartContext';
 
 const fetchProducts = async ({ queryKey }) => {
     const [_key, { latitude, longitude, apiUrl }] = queryKey;
@@ -34,6 +35,7 @@ const fetchProducts = async ({ queryKey }) => {
 const Products = () => {
     const theme = useTheme();
     const { latitude, longitude } = useContext(LocationContext);
+    const { setCartSummary } = useCart();
     const apiUrl = import.meta.env.VITE_API_URL;
     const navigate = useNavigate();
     const [localProducts, setLocalProducts] = useState({});
@@ -90,6 +92,12 @@ const Products = () => {
         navigate(`/product-details/${productId}`);
     };
 
+    const updateCartSummary = async () => {
+        const summary = await getCartSummary(apiUrl);
+        setCartSummary(summary);
+        setCartVisible(summary.totalQuantity > 0);
+    };
+
     const handleAdd = async (id) => {
         try {
             const portal_token = localStorage.getItem('portal_token');
@@ -113,7 +121,8 @@ const Products = () => {
             });
 
             await addToCart(id, 1);
-            window.dispatchEvent(new Event('cartChange'));
+            window.dispatchEvent(new CustomEvent('cartChange'));
+            await updateCartSummary();
             setCartVisible(true);
         } catch (error) {
             console.error('Error adding to cart:', error);
@@ -139,7 +148,8 @@ const Products = () => {
             const portal_token = localStorage.getItem('portal_token');
             if (portal_token) {
                 await addToCart(id, 1);
-                window.dispatchEvent(new Event('cartChange'));
+                window.dispatchEvent(new CustomEvent('cartChange'));
+                await updateCartSummary();
             }
             setCartVisible(true);
         } catch (error) {
@@ -166,7 +176,8 @@ const Products = () => {
             const portal_token = localStorage.getItem('portal_token');
             if (portal_token) {
                 await addToCart(id, -1);
-                window.dispatchEvent(new Event('cartChange'));
+                window.dispatchEvent(new CustomEvent('cartChange'));
+                await updateCartSummary();
             }
 
             const updatedCartSummary = await getCartSummary(apiUrl);

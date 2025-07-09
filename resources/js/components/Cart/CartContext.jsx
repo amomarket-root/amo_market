@@ -4,7 +4,7 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
     const [cartModalOpen, setCartModalOpen] = useState(false);
-    const [cartItemsCount, setCartItemsCount] = useState(0);
+    const [cartSummary, setCartSummary] = useState({ totalQuantity: 0, totalAmount: 0 });
 
     const openCartModal = () => setCartModalOpen(true);
     const closeCartModal = () => setCartModalOpen(false);
@@ -14,8 +14,8 @@ export const CartProvider = ({ children }) => {
             cartModalOpen,
             openCartModal,
             closeCartModal,
-            cartItemsCount,
-            setCartItemsCount
+            cartSummary,
+            setCartSummary
         }}>
             {children}
         </CartContext.Provider>
