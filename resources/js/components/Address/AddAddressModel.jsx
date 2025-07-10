@@ -21,6 +21,8 @@ import HomeWorkTwoToneIcon from '@mui/icons-material/HomeWorkTwoTone';
 import OtherHousesTwoToneIcon from '@mui/icons-material/OtherHousesTwoTone';
 import MyLocationTwoToneIcon from '@mui/icons-material/MyLocationTwoTone';
 import MapAddressModel from './MapAddressModel';
+import { CircularProgress } from '@mui/material';
+import AddLocationAltTwoToneIcon from '@mui/icons-material/AddLocationAltTwoTone';
 import axios from 'axios';
 import Skeleton from '@mui/material/Skeleton';
 import { useSnackbar } from '../Theme/SnackbarAlert';
@@ -325,7 +327,7 @@ const AddAddressModel = ({ open, onClose, addressToEdit }) => {
                             <Grid container spacing={2}>
                                 {[...Array(10)].map((_, index) => (
                                     <Grid item xs={12} key={index}>
-                                        <Skeleton variant="rectangular" height={35}  sx={{borderRadius:3}}/>
+                                        <Skeleton variant="rectangular" height={35} sx={{ borderRadius: 3 }} />
                                     </Grid>
                                 ))}
                             </Grid>
@@ -510,13 +512,18 @@ const AddAddressModel = ({ open, onClose, addressToEdit }) => {
                                                 border: '1px solid #ccc',
                                                 borderRadius: '8px',
                                                 padding: '8px 16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center', // <-- center horizontally
+                                                gap: 1, // space between icon and text
                                                 '&:hover': {
                                                     borderColor: '#999',
                                                 }
                                             }}
                                             onClick={handleButtonClick}
                                         >
-                                            + Add Nearby Famous Landmark
+                                            <AddLocationAltTwoToneIcon fontSize="small" />
+                                            Add Nearby Famous Landmark
                                         </Button>
                                     </Grid>
                                     {showTextField && (
@@ -582,15 +589,19 @@ const AddAddressModel = ({ open, onClose, addressToEdit }) => {
                                 width: '100%',
                                 padding: '10px 0',
                                 borderRadius: '25px',
-                                backgroundColor: 'green',
+                                backgroundColor: 'success.main',
                                 '&:hover': {
-                                    backgroundColor: '#5a1bcc',
+                                    backgroundColor: 'primary.dark',
                                 },
                             }}
                             onClick={handleSubmit}
                             disabled={loading}
                         >
-                            {loading ? <Skeleton variant="text" width="100%" /> : 'Save Address'}
+                            {loading ? (
+                                <CircularProgress size={24} sx={{ color: '#fff' }} />
+                            ) : (
+                                'Save Address'
+                            )}
                         </Button>
                     </Box>
                 </Box>

@@ -21,6 +21,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddAddressModel from './AddAddressModel';
 import AddressAddModel from './AddressAddModel';
 import { useSnackbar } from '../Theme/SnackbarAlert';
+import { useSweetAlert } from '../Theme/SweetAlert';
 import axios from 'axios';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -37,6 +38,7 @@ const AddressModel = ({ open, onClose, onAddressSelect }) => {
     const [loading, setLoading] = useState(true);
     const apiUrl = import.meta.env.VITE_API_URL;
     const showSnackbar = useSnackbar();
+    const showAlert = useSweetAlert();
 
     const fetchAddresses = useCallback(async () => {
         try {
@@ -101,7 +103,20 @@ const AddressModel = ({ open, onClose, onAddressSelect }) => {
     const handleSelectAddress = (address) => {
         setSelectedAddress(address);
         onAddressSelect(address);
-        onClose();
+    };
+
+    const handleProcessToCheckout = () => {
+        if (!selectedAddress) {
+            showAlert({
+                title: 'No Address Selected',
+                text: 'Please select an address before proceeding to checkout',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            onClose();
+            // You can add additional checkout logic here if needed
+        }
     };
 
     return (
@@ -157,13 +172,14 @@ const AddressModel = ({ open, onClose, onAddressSelect }) => {
                             sx={{
                                 width: '100%',
                                 borderRadius: '12px',
-                                borderColor: 'green',
-                                color: 'green',
+                                borderColor: 'success.main',
+                                color: 'success.main',
                                 mb: 1,
                                 padding: '12px 0',
                                 '&:hover': {
-                                    borderColor: 'green',
+                                    borderColor: 'success.dark',
                                     backgroundColor: 'transparent',
+                                    color: 'success.dark',
                                 },
                             }}
                             onClick={handleOpenAddAddressModel}
@@ -225,11 +241,11 @@ const AddressModel = ({ open, onClose, onAddressSelect }) => {
                                     >
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                             {address.address_type === 'home' ? (
-                                                <HomeTwoToneIcon sx={{ fontSize: 40, color: 'goldenrod', mr: 2 }} />
+                                                <HomeTwoToneIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
                                             ) : address.address_type === 'work' ? (
-                                                <HomeWorkTwoToneIcon sx={{ fontSize: 40, color: 'goldenrod', mr: 2 }} />
+                                                <HomeWorkTwoToneIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
                                             ) : (
-                                                <OtherHousesTwoToneIcon sx={{ fontSize: 40, color: 'goldenrod', mr: 2 }} />
+                                                <OtherHousesTwoToneIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
                                             )}
                                             <Box sx={{ flexGrow: 1 }}>
                                                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
@@ -315,11 +331,12 @@ const AddressModel = ({ open, onClose, onAddressSelect }) => {
                                 width: '100%',
                                 padding: '10px 0',
                                 borderRadius: '25px',
-                                backgroundColor: 'green',
+                                backgroundColor: 'success.main',
                                 '&:hover': {
-                                    backgroundColor: '#5a1bcc',
+                                    backgroundColor: 'primary.dark',
                                 },
                             }}
+                            onClick={handleProcessToCheckout}
                         >
                             Process to Checkout
                         </Button>

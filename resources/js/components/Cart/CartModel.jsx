@@ -579,10 +579,10 @@ const CartModal = () => {
                                         width: '100%',
                                         padding: '10px 0',
                                         borderRadius: '25px',
-                                        backgroundColor: 'green',
+                                        backgroundColor: 'success.main',
                                         '&:hover': {
-                                            backgroundColor: '#5a1bcc',
-                                            borderColor: '#5a1bcc',
+                                             backgroundColor: 'primary.dark',
+                                            borderColor: 'primary.dark',
                                         }
                                     }}
                                     onClick={selectedAddress ? handleOpenPaymentMethodsModel : handleOpenAddressModel}

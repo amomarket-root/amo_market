@@ -849,9 +849,9 @@ const AddressAddModel = ({ open, onClose, addressToEdit }) => {
                                     width: '100%',
                                     padding: '3px 0',
                                     borderRadius: '25px',
-                                    backgroundColor: 'green',
+                                    backgroundColor: 'success.main',
                                     '&:hover': {
-                                        backgroundColor: '#5a1bcc',
+                                        backgroundColor: 'primary.dark',
                                     },
                                 }}
                                 onClick={handleSubmit}

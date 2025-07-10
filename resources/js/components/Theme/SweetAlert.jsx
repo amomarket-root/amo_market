@@ -44,7 +44,7 @@ export const SweetAlertProvider = ({ children }) => {
         <CheckCircle
           sx={{
             fontSize: 80,
-            color: theme.palette.success.main,
+             color: '#10d915',
             mb: 1,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
           }}
@@ -56,7 +56,7 @@ export const SweetAlertProvider = ({ children }) => {
         <Warning
           sx={{
             fontSize: 80,
-            color: theme.palette.warning.main,
+            color: '#f7e119',
             mb: 1,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
           }}
@@ -68,7 +68,7 @@ export const SweetAlertProvider = ({ children }) => {
         <ErrorIcon
           sx={{
             fontSize: 80,
-            color: theme.palette.error.main,
+            color: '#f27474',
             mb: 1,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
           }}
@@ -80,7 +80,7 @@ export const SweetAlertProvider = ({ children }) => {
         <Help
           sx={{
             fontSize: 80,
-            color: theme.palette.primary.main,
+            color: '#9F63FF',
             mb: 1,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
           }}
@@ -226,14 +226,14 @@ export const SweetAlertProvider = ({ children }) => {
                 variant="outlined"
                 onClick={() => handleClose(false)}
                 sx={{
-                  color: alertState.cancelButtonColor || theme.palette.error.main,
-                  borderColor: alertState.cancelButtonColor || theme.palette.error.main,
+                  color: '#f27474',
+                  borderColor: '#f27474',
                   borderRadius: '8px',
                   textTransform: 'none',
                   fontWeight: 600,
                   px: 3,
                   '&:hover': {
-                    backgroundColor: 'rgba(244, 67, 54, 0.08)',
+                    backgroundColor: 'rgba(247, 85, 74, 0.08)',
                     borderColor: alertState.cancelButtonColor || theme.palette.error.main,
                   }
                 }}
@@ -246,14 +246,14 @@ export const SweetAlertProvider = ({ children }) => {
               onClick={() => handleClose(true)}
               sx={{
                 color: '#fff',
-                backgroundColor: alertState.confirmButtonColor || theme.palette.primary.main,
+                backgroundColor: "#0f85d9",
                 borderRadius: '8px',
                 textTransform: 'none',
                 fontWeight: 600,
                 px: 3,
                 boxShadow: 'none',
                 '&:hover': {
-                  backgroundColor: alertState.confirmButtonColor || theme.palette.primary.dark,
+                  backgroundColor: "#0f85d9",
                   boxShadow: 'none',
                 }
               }}
@@ -275,8 +275,8 @@ export const SweetAlert = {
       text,
       icon: 'success',
       confirmButtonText,
-      confirmButtonColor: '#4CAF50',
-      cancelButtonColor: '#f44336',
+      confirmButtonColor: '#0f85d9',
+      cancelButtonColor: '#f27474',
       timer: 3000,
       ...options
     });
@@ -289,8 +289,8 @@ export const SweetAlert = {
       text,
       icon: 'warning',
       confirmButtonText,
-      confirmButtonColor: '#FF9800',
-      cancelButtonColor: '#f44336',
+      confirmButtonColor: '#0f85d9',
+      cancelButtonColor: '#f27474',
       timer: 3000,
       ...options
     });
@@ -303,8 +303,8 @@ export const SweetAlert = {
       text,
       icon: 'error',
       confirmButtonText,
-      confirmButtonColor: '#F44336',
-      cancelButtonColor: '#9E9E9E',
+      confirmButtonColor: '#0f85d9',
+      cancelButtonColor: '#f27474',
       timer: 3000,
       ...options
     });
@@ -319,8 +319,8 @@ export const SweetAlert = {
       showCancelButton: true,
       confirmButtonText,
       cancelButtonText,
-      confirmButtonColor: '#9C27B0',
-      cancelButtonColor: '#9E9E9E',
+      confirmButtonColor: '#0f85d9',
+      cancelButtonColor: '#f27474',
       timer: 3000,
       ...options
     });
