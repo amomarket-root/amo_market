@@ -67,15 +67,15 @@ const CartButton = () => {
                     color="success"
                     sx={{
                         position: 'fixed',
-                        top: '90%',
+                        top: '88%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
                          backgroundColor: '#0cc10f',
                         display: 'flex',
                         alignItems: 'center',
                         zIndex: 2000,
-                        minWidth: '340px',
-                        height: '65px',
+                        minWidth: '300px',
+                        height: '60px',
                         fontSize: '1rem',
                     }}
                     onClick={openCartModal}
