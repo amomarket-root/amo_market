@@ -41,6 +41,7 @@ const CartModal = () => {
     const navigate = useNavigate();
     const apiUrl = import.meta.env.VITE_API_URL;
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const [clicked, setClicked] = useState(false);
     const [openAddressModel, setOpenAddressModel] = useState(false);
     const [openPaymentMethodsModel, setOpenPaymentMethodsModel] = useState(false);
     const [cartItems, setCartItems] = useState([]);
@@ -84,7 +85,10 @@ const CartModal = () => {
         const charge = Math.round(baseDeliveryCharge * distance);
         return Math.max(charge, minDeliveryCharge);
     };
-
+    const handleClick = () => {
+        setClicked(true); // set to true when clicked
+        handleOpenAddressModel(); // call your original function
+    };
     const fetchCartItems = useCallback(async () => {
         try {
             const portal_token = localStorage.getItem('portal_token');
@@ -524,7 +528,7 @@ const CartModal = () => {
                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                             <img
-                                                src="/image/add_location.webp"
+                                                src="/image/location_pin.webp"
                                                 alt="Location Icon"
                                                 style={{ width: 40, height: 40, marginRight: 8 }}
                                             />
@@ -557,17 +561,18 @@ const CartModal = () => {
                                         </Box>
 
                                         <Button
-                                            variant="outlined"
+                                            variant={clicked ? 'contained' : 'outlined'}
                                             sx={{
                                                 borderRadius: '12px',
-                                                borderColor: 'green',
-                                                color: 'green',
+                                                borderColor: 'primary.main',
+                                                color: clicked ? 'white' : 'primary.main',
+                                                backgroundColor: clicked ? 'primary.main' : 'transparent',
                                                 '&:hover': {
-                                                    borderColor: 'green',
-                                                    backgroundColor: 'transparent',
+                                                    borderColor: 'primary.dark',
+                                                    backgroundColor: clicked ? 'primary.dark' : 'transparent',
                                                 },
                                             }}
-                                            onClick={handleOpenAddressModel}
+                                            onClick={handleClick}
                                         >
                                             Change
                                         </Button>
@@ -581,7 +586,7 @@ const CartModal = () => {
                                         borderRadius: '25px',
                                         backgroundColor: 'success.main',
                                         '&:hover': {
-                                             backgroundColor: 'primary.dark',
+                                            backgroundColor: 'primary.dark',
                                             borderColor: 'primary.dark',
                                         }
                                     }}

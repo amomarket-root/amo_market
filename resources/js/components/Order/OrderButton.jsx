@@ -107,7 +107,7 @@ const OrderButton = () => {
     return (
         <Box sx={{
             position: 'fixed',
-            bottom: '30px',
+            bottom: isMobile ? '85px' : '10px',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 2000,
@@ -130,7 +130,7 @@ const OrderButton = () => {
                         display: 'flex',
                         alignItems: 'flex-start',
                         minWidth: isMobile ? '360px' : '400px',
-                        height: expandOrders ? 'auto' : isMobile ? '65px' : '70px',
+                        height: expandOrders ? 'auto' : isMobile ? '60px' : '60px',
                         fontSize: isMobile ? '1rem' : '1.2rem',
                         padding: '12px',
                         flexDirection: 'column',

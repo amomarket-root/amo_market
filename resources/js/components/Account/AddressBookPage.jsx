@@ -102,12 +102,13 @@ const AddressBookPage = ({ onAddressSelect }) => {
                     sx={{
                         width: '100%',
                         borderRadius: '12px',
-                        borderColor: 'green',
-                        color: 'green',
+                        borderColor: 'success.main',
+                        color: 'success.main',
                         padding: '12px 0',
                         '&:hover': {
-                            borderColor: 'green',
+                            borderColor: 'success.dark',
                             backgroundColor: 'transparent',
+                            color: 'success.dark',
                         },
                     }}
                     onClick={() => setOpenModal(true)}

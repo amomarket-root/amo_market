@@ -67,7 +67,7 @@ const CartButton = () => {
                     color="success"
                     sx={{
                         position: 'fixed',
-                        top: '88%',
+                        top: '85%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
                          backgroundColor: '#0cc10f',
