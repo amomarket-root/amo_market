@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useContext } from "react";
 import { LocationContext } from './LocationContext';
 import {IconButton} from '@mui/material';
 import LocationButton from './LocationButton';
-import LocationPopover from './LocationPopover';
+import LocationDialog from './LocationDialog';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
@@ -16,7 +16,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const Location = ({ onLocationSelect }) => {
     const { latitude, longitude, address, updateLocation } = useContext(LocationContext);
     const [location, setLocation] = useState("");
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [open, setOpen] = useState(false);
     const [currentAddress, setCurrentAddress] = useState("");
     const [loading, setLoading] = useState(true);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -68,10 +68,10 @@ const Location = ({ onLocationSelect }) => {
                         const success = await fetchShops(latitude, longitude);
                         if (success) {
                             updateLocation(latitude, longitude, formattedAddress);
-                            setAnchorEl(null);
+                            setOpen(false);
                             setIsDropdownOpen(false);
                         } else {
-                            setAnchorEl(document.getElementById('location-button'));
+                            setOpen(true);
                         }
                     } else {
                         setCurrentAddress("Unable to fetch address");
@@ -86,7 +86,7 @@ const Location = ({ onLocationSelect }) => {
             (error) => {
                 console.error("Error getting current location:", error);
                 setLoading(false);
-                setAnchorEl(null);
+                setOpen(false);
                 setIsDropdownOpen(false);
             }
         );
@@ -102,12 +102,12 @@ const Location = ({ onLocationSelect }) => {
     }, [latitude, longitude, fetchGeocodeLocation]);
 
     const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
+        setOpen(true);
         setIsDropdownOpen((prev) => !prev);
     };
 
     const handleClose = () => {
-        setAnchorEl(null);
+        setOpen(false);
         setIsDropdownOpen(false);
     };
 
@@ -118,16 +118,15 @@ const Location = ({ onLocationSelect }) => {
     };
 
     const truncate = (str, n) => {
-        return str.length > n ? str.substr(0, n - 1) + "..." : str;
+        return str.length > n ? str.substr(0, n - 1) + " ..." : str;
     };
 
     return (
         <>
             <div style={{ display: "flex", alignItems: "center" }}>
                 <LocationButton onClick={handleClick} />
-                <LocationPopover
-                    open={Boolean(anchorEl)}
-                    anchorEl={anchorEl}
+                <LocationDialog
+                    open={open}
                     onClose={handleClose}
                     loading={loading}
                     error={error}
@@ -143,12 +142,12 @@ const Location = ({ onLocationSelect }) => {
                         Delivery in 20 minutes
                     </Typography>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="body2" noWrap style={{ color: "#212121", marginRight: 8 }}>
+                        <Typography variant="body2" noWrap style={{ color: "#212121" }}>
                             {loading ? (
                                 <Skeleton width={200} />
                             ) : (
                                 <Tooltip title={location || currentAddress || address || "Unable to fetch address"} arrow>
-                                    <Typography component="span" variant="body2" noWrap style={{ color: "#212121", marginRight: 8 }}>
+                                    <Typography component="span" variant="body2" noWrap style={{ color: "#212121"}}>
                                         {truncate(location || currentAddress || address || "Unable to fetch address", 30)}
                                     </Typography>
                                 </Tooltip>

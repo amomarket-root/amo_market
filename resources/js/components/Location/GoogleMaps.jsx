@@ -122,7 +122,6 @@ const GoogleMaps = ({
 
     return (
         <Autocomplete
-            sx={{ width: 340 }}
             size="small"
             getOptionLabel={(option) => option.description}
             filterOptions={(x) => x}
