@@ -10,20 +10,22 @@ use App\Models\User;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 
 class PortalAuthenticateController extends Controller
 {
-    public function redirectToProvider()
+    public function redirectToGoogle()
     {
         return Socialite::driver('google')
             ->stateless()
             ->redirect();
     }
 
-    public function handleProviderCallback(): RedirectResponse
+    public function handleGoogleCallback(): RedirectResponse
     {
         try {
             $socialUser = Socialite::driver('google')->stateless()->user();
@@ -43,6 +45,9 @@ class PortalAuthenticateController extends Controller
             ]
         );
 
+        // Check if this is a new user (was just created)
+        $isNewUser = $user->wasRecentlyCreated;
+
         // Update or create provider
         $user->providers()->updateOrCreate(
             [
@@ -55,7 +60,12 @@ class PortalAuthenticateController extends Controller
         // Update login time
         $user->update(['login_time' => now()]);
 
-        // Create token using your existing naming convention
+        // Send welcome email if new user
+        if ($isNewUser) {
+           Mail::to($user->email)->queue(new WelcomeEmail($user, 'google')); // For Google
+        }
+
+        // Create token
         $token = $user->createToken('API TOKEN')->plainTextToken;
 
         return redirect()->to(
@@ -72,40 +82,69 @@ class PortalAuthenticateController extends Controller
         );
     }
 
-    public function facebookLogin()
+    public function redirectToFacebook()
     {
-        return Socialite::driver('facebook')->stateless()->redirect();
+        return Socialite::driver('facebook')
+            ->stateless()
+            ->redirect();
     }
 
-
-    public function facebookHandle()
+    public function handleFacebookCallback(): RedirectResponse
     {
         try {
-            $facebookUser = Socialite::driver('facebook')->stateless()->user();
-
-            $user = User::firstOrCreate(
-                ['social_media_id' => $facebookUser->id],
-                [
-                    'email'      => $facebookUser->email,
-                    'name'       => $facebookUser->name,
-                    'avatar'     => $facebookUser->avatar,
-                    'login_time' => Carbon::now(),
-                    'status'     => '1',
-                ]
-            );
-
-            $token = $user->createToken('API TOKEN')->plainTextToken;
-
-            return redirect('http://localhost:3000/dashboard?token=' . $token);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status'  => false,
-                'message' => $th->getMessage(),
-            ], 500);
+            $socialUser = Socialite::driver('facebook')->stateless()->user();
+        } catch (\Exception $e) {
+            return redirect()->to('/?error=invalid_credentials');
         }
+
+        // Find or create user
+        $user = User::firstOrCreate(
+            ['email' => $socialUser->getEmail()],
+            [
+                'name' => $socialUser->getName(),
+                'email_verified_at' => now(),
+                'password' => null,
+                'role_id' => Role::where('name', 'Customer')->first()->id,
+                'status' => 1,
+            ]
+        );
+
+        // Check if this is a new user (was just created)
+        $isNewUser = $user->wasRecentlyCreated;
+
+        // Update or create provider
+        $user->providers()->updateOrCreate(
+            [
+                'provider' => 'facebook',
+                'provider_id' => $socialUser->getId(),
+            ],
+            ['avatar' => $socialUser->getAvatar()]
+        );
+
+        // Update login time
+        $user->update(['login_time' => now()]);
+
+        // Send welcome email if new user
+        if ($isNewUser) {
+            Mail::to($user->email)->queue(new WelcomeEmail($user, 'facebook')); // For Facebook
+        }
+
+        // Create token
+        $token = $user->createToken('API TOKEN')->plainTextToken;
+
+        return redirect()->to(
+            env('FRONTEND_URL', 'http://localhost:8001') .
+                '/auth/callback?portal_token=' . urlencode($token) .
+                '&user=' . urlencode(json_encode([
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role_id' => $user->role_id,
+                    'status' => $user->status,
+                    'is_authenticate' => true
+                ]))
+        );
     }
-
-
     public function deleteAccount(Request $request)
     {
         $request->validate([

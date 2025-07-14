@@ -47,7 +47,7 @@ return [
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
-        'redirect' => env('FACEBOOK_REDIRECT_URL'),
+        'redirect' =>  env('APP_URL') . '/api/login/facebook/callback' ?? env('FACEBOOK_REDIRECT_URL'),
     ],
     'cashfree' => [
         'api_key' => env('CASHFREE_API_KEY'),

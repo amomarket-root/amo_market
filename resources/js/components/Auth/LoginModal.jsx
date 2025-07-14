@@ -67,7 +67,7 @@ const LoginModal = ({ open, onClose }) => {
             }
             localStorage.removeItem("portal_token");
             localStorage.removeItem("user_id");
-            window.location.href = `${apiUrl}/portal/authenticate/facebook`;
+            window.location.href = `${apiUrl}/login/facebook`;
         } catch (error) {
             showAlert({
                 title: "Error!",
