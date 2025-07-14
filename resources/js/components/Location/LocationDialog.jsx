@@ -138,7 +138,7 @@ const LocationDialog = ({
                                 <Box display="flex" alignItems="center" justifyContent="center" mb={0.6}>
                                     <Chip
                                         label="- OR -"
-                                        color="success"
+                                        color="secondary"
                                         sx={{
                                             color: "white",
                                             fontWeight: 'bold',
