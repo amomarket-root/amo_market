@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { LocationContext } from './LocationContext';
-import {IconButton} from '@mui/material';
+import { IconButton } from '@mui/material';
 import LocationButton from './LocationButton';
 import LocationDialog from './LocationDialog';
 import Typography from '@mui/material/Typography';
@@ -15,7 +15,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 const Location = ({ onLocationSelect }) => {
     const { latitude, longitude, address, updateLocation } = useContext(LocationContext);
-    const [location, setLocation] = useState("");
+    const [location, setLocation] = useState(address || "");
     const [open, setOpen] = useState(false);
     const [currentAddress, setCurrentAddress] = useState("");
     const [loading, setLoading] = useState(true);
@@ -48,6 +48,14 @@ const Location = ({ onLocationSelect }) => {
             return false;
         }
     };
+
+    const handleLocationSelect = useCallback((locationData) => {
+        updateLocation(locationData.lat, locationData.lng, locationData.fullAddress);
+        setLocation(locationData.fullAddress);
+        if (onLocationSelect) {
+            onLocationSelect(locationData);
+        }
+    }, [updateLocation, onLocationSelect]);
 
     const fetchGeocodeLocation = useCallback(async () => {
         navigator.geolocation.getCurrentPosition(
@@ -131,7 +139,7 @@ const Location = ({ onLocationSelect }) => {
                     loading={loading}
                     error={error}
                     handleCurrentLocationClick={handleCurrentLocationClick}
-                    onLocationSelect={onLocationSelect}
+                    onLocationSelect={handleLocationSelect}
                     setError={setError}
                     fetchShops={fetchShops}
                     handleClose={handleClose}
