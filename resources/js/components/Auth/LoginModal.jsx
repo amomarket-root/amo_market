@@ -77,6 +77,17 @@ const LoginModal = ({ open, onClose }) => {
         }
     };
 
+    // Add these handlers just above the return
+    const handleTermsClick = () => {
+        onClose(); // Close the dialog
+        navigate("/terms");
+    };
+
+    const handlePrivacyClick = () => {
+        onClose(); // Close the dialog
+        navigate("/privacy");
+    };
+
     const validateForm = () => {
         let valid = true;
         const trimmedName = name.trim();
@@ -323,6 +334,7 @@ const LoginModal = ({ open, onClose }) => {
                     <Typography variant="body2">
                         By continuing, you agree to our{" "}
                         <button
+                            onClick={handleTermsClick}
                             style={{
                                 background: "none",
                                 border: "none",
@@ -335,6 +347,7 @@ const LoginModal = ({ open, onClose }) => {
                         </button>{" "}
                         &{" "}
                         <button
+                            onClick={handlePrivacyClick}
                             style={{
                                 background: "none",
                                 border: "none",
