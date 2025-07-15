@@ -9,7 +9,46 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductService
 {
-    public function getAllProduct($latitude, $longitude, $radius = 2)
+    public function getAllProduct($latitude, $longitude, $radius = 3)
+    {
+        // Create a unique cache key for this query
+        $cacheKey = 'products_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");
+
+        return Cache::remember($cacheKey, now()->addMinutes(20), function () use ($latitude, $longitude, $radius) {
+            // Fetch shops within the specified radius
+            $shops = Shop::selectRaw('id, name, latitude, longitude,
+            ( 6371 * acos( cos( radians(?) ) *
+            cos( radians( latitude ) )
+            * cos( radians( longitude ) - radians(?) )
+            + sin( radians(?) ) *
+            sin( radians( latitude ) ) ) )
+            AS distance', [$latitude, $longitude, $latitude])
+                ->where('online_status', 1)  // Only include shops that are online
+                ->having('distance', '<', $radius)
+                ->orderBy('distance', 'asc')
+                ->get();
+
+            // Get the IDs of the shops within the radius
+            $shopIds = $shops->pluck('id')->toArray();
+
+            // Fetch products that belong to the shops within the radius
+            $products = Product::select('id', 'sub_category_id', 'name', 'image', 'weight', 'price', 'original_price', 'discount', 'delivery_time', 'status')
+                ->with(['sub_category.category' => function ($query) use ($shopIds) {
+                    $query->whereIn('shop_id', $shopIds);
+                }])
+                ->whereHas('sub_category.category', function ($query) use ($shopIds) {
+                    $query->whereIn('shop_id', $shopIds);
+                })
+                ->orderBy('id', 'asc')
+                ->limit(20)
+                ->get();
+
+            // Group the products by their category name
+            return $products->groupBy('sub_category.category.name');
+        });
+    }
+
+    public function getSeeAllProduct($latitude, $longitude, $radius = 3)
     {
         // Create a unique cache key for this query
         $cacheKey = 'products_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");

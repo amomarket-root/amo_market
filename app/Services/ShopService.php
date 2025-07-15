@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ShopService
 {
-    public function getShopsNearby($latitude, $longitude, $radius = 2)
+    public function getShopsNearby($latitude, $longitude, $radius = 3)
     {
         // Generate a unique cache key based on location and radius
         $cacheKey = 'shops_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");
@@ -48,7 +48,7 @@ class ShopService
         });
     }
 
-    public function getSeeAllShops($latitude, $longitude, $radius = 2)
+    public function getSeeAllShops($latitude, $longitude, $radius = 3)
     {
         // Generate a unique Redis cache key
         $cacheKey = 'see_all_shops_'.md5("lat:$latitude|lng:$longitude|radius:$radius");

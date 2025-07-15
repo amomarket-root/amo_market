@@ -103,7 +103,37 @@ class CategoryController extends Controller
         }
 
         // Get categories based on shops within a specific radius (e.g., 3 km)
-        $categories = $this->categoryService->getCategoriesByShopLocation($latitude, $longitude, 2); // Assuming you have this method
+        $categories = $this->categoryService->getCategoriesByShopLocation($latitude, $longitude, 3); // Assuming you have this method
+
+        if ($categories->isEmpty()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'No categories found for shops within 3 km.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Categories Retrieved Successfully.',
+            'data'    => $categories,
+        ], 200);
+    }
+
+    public function getSeeAllCategories(Request $request)
+    {
+        $latitude  = $request->input('latitude');
+        $longitude = $request->input('longitude');
+
+        // If latitude and longitude are not provided, return all categories
+        if (! $latitude || ! $longitude) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Current location not provided.',
+            ], 400);
+        }
+
+        // Get categories based on shops within a specific radius (e.g., 3 km)
+        $categories = $this->categoryService->getSeeCategoriesByShopLocation($latitude, $longitude, 3); // Assuming you have this method
 
         if ($categories->isEmpty()) {
             return response()->json([
@@ -208,7 +238,37 @@ class CategoryController extends Controller
         }
 
         // Get categories based on shops within a specific radius (e.g., 3 km)
-        $categories = $this->categoryService->getServicesByShopLocation($latitude, $longitude, 2); // Assuming you have this method
+        $categories = $this->categoryService->getServicesByShopLocation($latitude, $longitude, 3); // Assuming you have this method
+
+        if ($categories->isEmpty()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'No services found for shops within 3 km.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Services Retrieved Successfully.',
+            'data'    => $categories,
+        ], 200);
+    }
+
+    public function getSeeAllServices(Request $request)
+    {
+        $latitude  = $request->input('latitude');
+        $longitude = $request->input('longitude');
+
+        // If latitude and longitude are not provided, return all categories
+        if (! $latitude || ! $longitude) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Current location not provided.',
+            ], 400);
+        }
+
+        // Get categories based on shops within a specific radius (e.g., 3 km)
+        $categories = $this->categoryService->getSeeServicesByShopLocation($latitude, $longitude, 3); // Assuming you have this method
 
         if ($categories->isEmpty()) {
             return response()->json([

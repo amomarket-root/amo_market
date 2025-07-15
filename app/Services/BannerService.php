@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class BannerService
 {
-    public function getShopBannerNearby($latitude, $longitude, $radius = 2)
+    public function getShopBannerNearby($latitude, $longitude, $radius = 3)
     {
         // Generate unique cache key based on location and radius
         $cacheKey = 'banner_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");

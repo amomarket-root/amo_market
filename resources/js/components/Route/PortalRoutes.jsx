@@ -13,6 +13,9 @@ const NotFoundPage = lazy(() => import('./NotFoundPage'));
 const CartButtonLayout = lazy(() => import('../Cart/CartButtonLayout'));
 const AccountPage = lazy(() => import('../Account/AccountPage'));
 const AllProduct = lazy(() => import('../Product/AllProduct'));
+const AllCategory = lazy(() => import('../Category/AllCategory'));
+const AllServices = lazy(() => import('../Service/AllServices'));
+const SeeAllProduct = lazy(() => import('../Product/SeeAllProduct'));
 const ProductDetails = lazy(() => import('../Product/ProductDetails'));
 const SubCategoryWiseProduct = lazy(() => import('../Product/SubCategoryWiseProduct'));
 const OrderHistoryPage = lazy(() => import('../Account/OrderHistoryPage'));
@@ -90,6 +93,35 @@ const PortalRoutes = () => {
                                     <CartModel />
                                     <OrderModel />
                                 </>
+                            } />
+                            {/* All Category Routes */}
+                            <Route path="/see_all_category" element={
+                                <Layout>
+                                    <CartButtonLayout>
+                                        <OrderButtonLayout>
+                                            <AllCategory />
+                                        </OrderButtonLayout>
+                                    </CartButtonLayout>
+                                </Layout>
+                            } />
+                            {/* All Service Routes */}
+                            <Route path="/see_all_service" element={
+                                <Layout>
+                                    <CartButtonLayout>
+                                        <OrderButtonLayout>
+                                            <AllServices />
+                                        </OrderButtonLayout>
+                                    </CartButtonLayout>
+                                </Layout>
+                            } />
+                            <Route path="/see_all_product" element={
+                                <Layout>
+                                    <CartButtonLayout>
+                                        <OrderButtonLayout>
+                                            <SeeAllProduct />
+                                        </OrderButtonLayout>
+                                    </CartButtonLayout>
+                                </Layout>
                             } />
                             {/* Product Routes */}
                             <Route path="/all_product/:categoryId" element={

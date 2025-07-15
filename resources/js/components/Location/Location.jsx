@@ -155,23 +155,30 @@ const Location = ({ onLocationSelect }) => {
                                 <Skeleton width={200} />
                             ) : (
                                 <Tooltip title={location || currentAddress || address || "Unable to fetch address"} arrow>
-                                    <Typography component="span" variant="body2" noWrap style={{ color: "#212121"}}>
+                                    <Typography component="span" variant="body2" noWrap style={{ color: "#212121" }}>
                                         {truncate(location || currentAddress || address || "Unable to fetch address", 30)}
                                     </Typography>
                                 </Tooltip>
                             )}
                         </Typography>
-                        {isDropdownOpen ? (
-                            <ArrowDropUpIcon
-                                style={{ color: "#000", cursor: "pointer", fontSize: 40 }}
-                                onClick={handleClick}
-                            />
-                        ) : (
-                            <ArrowDropDownIcon
-                                style={{ color: "#000", cursor: "pointer", fontSize: 40 }}
-                                onClick={handleClick}
-                            />
-                        )}
+                        <IconButton
+                            onClick={handleClick}
+                            size="small"
+                            style={{
+                                marginLeft: 8,
+                                width: 36,
+                                height: 36,
+                                borderRadius: '50%',
+                                border: '1px solid #ccc',
+                                backgroundColor: '#f5f5f5',
+                            }}
+                        >
+                            {isDropdownOpen ? (
+                                <ArrowDropUpIcon style={{ color: "#000", fontSize: 28 }} />
+                            ) : (
+                                <ArrowDropDownIcon style={{ color: "#000", fontSize: 28 }} />
+                            )}
+                        </IconButton>
                     </div>
                 </div>
             </div>

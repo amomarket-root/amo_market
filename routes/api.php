@@ -55,10 +55,15 @@ Route::middleware('guest')->prefix('portal')->group(function () {
 
     // Category routes
     Route::get('category', [CategoryController::class, 'getAllCategories']);
+    Route::get('see_all_category', [CategoryController::class, 'getSeeAllCategories']);
+
+    // Services routes
     Route::get('services', [CategoryController::class, 'getAllServices']);
+    Route::get('see_all_services', [CategoryController::class, 'getSeeAllServices']);
 
     // Product routes
     Route::get('products', [ProductController::class, 'getAllProduct']);
+    Route::get('see_all_product', [ProductController::class, 'getSeeAllProduct']);
     Route::get('product_by_id', [ProductController::class, 'getAllProductById']);
     Route::get('product_details', [ProductController::class, 'getProductDetailById']);
     Route::get('product_by_group', [ProductController::class, 'getAllProductByGroup']);

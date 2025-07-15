@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Container, Grid, Card, CardMedia, CardContent, Typography, Tooltip, Skeleton, Box, useMediaQuery } from '@mui/material';
+import { Container, Grid, Card, CardMedia, CardContent, Typography, Tooltip, Skeleton, Box, useMediaQuery, IconButton } from '@mui/material';
 import { AccessTime, Star } from '@mui/icons-material';
 import { LocationContext } from '../Location/LocationContext';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { styled } from '@mui/system';
 import Theme from '../Theme/Theme';
 import { ThemeProvider } from '@mui/material/styles';
@@ -97,7 +98,9 @@ function SeeAllShop() {
         staleTime: 20 * 60 * 1000, // 20 minutes stale time
         keepPreviousData: true,
     });
-
+    const handleBack = () => {
+        navigate(-1); // Go to previous page
+    };
     const handleCardClick = async (shopId, shopPertainType, isOnline) => {
         if (!isOnline) {
             // Using the showAlert function directly
@@ -274,13 +277,29 @@ function SeeAllShop() {
         <Container sx={{ maxWidth: '100%', padding: isMobile ? '0 2px' : '0px' }} maxWidth={false}>
             <ThemeProvider theme={Theme}>
                 <ResponsiveHeaderBox>
-                    {isLoading ? (
-                        <Skeleton variant="text" width={350} height={35} />
-                    ) : (
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                            {isMobile ? 'Local shop in your location' : 'Recommended Nearby Shops for You'}
-                        </Typography>
-                    )}
+                    <Box display="flex" alignItems="center" gap={4}>
+                        <IconButton
+                            onClick={handleBack}
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                backgroundColor: '#f0f0f0',
+                                '&:hover': {
+                                    backgroundColor: '#e0e0e0',
+                                },
+                            }}
+                        >
+                            <ArrowBackIcon />
+                        </IconButton>
+                        {isLoading ? (
+                            <Skeleton variant="text" width={350} height={35} />
+                        ) : (
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                {isMobile ? 'Local shop in your location' : 'Recommended Nearby Shops for You'}
+                            </Typography>
+                        )}
+                    </Box>
                 </ResponsiveHeaderBox>
 
                 <Grid container spacing={isMobile ? 2 : 3} justifyContent="flex-start">

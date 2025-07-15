@@ -6,10 +6,12 @@ import {
     useTheme,
     useMediaQuery,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; // <-- Add this
 
 const FooterContent = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const navigate = useNavigate(); // <-- Hook for navigation
     const [visible, setVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
     const [value, setValue] = useState(0);
@@ -26,7 +28,6 @@ const FooterContent = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [lastScrollY]);
 
-    // Animate one icon every 2 seconds (5 total icons)
     useEffect(() => {
         const interval = setInterval(() => {
             setAnimationIndex((prevIndex) => (prevIndex + 1) % 5);
@@ -40,6 +41,29 @@ const FooterContent = () => {
         width: 30,
         height: 30,
         marginBottom: '6px',
+    };
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+        switch (newValue) {
+            case 0:
+                navigate('/');
+                break;
+            case 1:
+                navigate('/see_all_category');
+                break;
+            case 2:
+                navigate('/see_all_product');
+                break;
+            case 3:
+                navigate('/see_all_service');
+                break;
+            case 4:
+                navigate('/see_all_shop');
+                break;
+            default:
+                break;
+        }
     };
 
     return (
@@ -63,9 +87,7 @@ const FooterContent = () => {
             <BottomNavigation
                 showLabels
                 value={value}
-                onChange={(event, newValue) => {
-                    setValue(newValue);
-                }}
+                onChange={handleChange}
                 sx={{
                     bgcolor: 'white',
                     height: 70,

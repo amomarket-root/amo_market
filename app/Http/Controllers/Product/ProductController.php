@@ -112,7 +112,36 @@ class ProductController extends Controller
             ], 400);
         }
         // Get Products based on shops within a specific radius (e.g., 2 km)
-        $products = $this->productService->getAllProduct($latitude, $longitude, 2);
+        $products = $this->productService->getAllProduct($latitude, $longitude, 3);
+
+        if ($products->isEmpty()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Products List Not Found in the radius.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Products Retrieved Successfully.',
+            'data'    => $products,
+        ], 200);
+    }
+
+    public function getSeeAllProduct(Request $request)
+    {
+        $latitude  = $request->input('latitude');
+        $longitude = $request->input('longitude');
+
+        // If latitude and longitude are not provided, return all Products
+        if (! $latitude || ! $longitude) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Current location not provided.',
+            ], 400);
+        }
+        // Get Products based on shops within a specific radius (e.g., 2 km)
+        $products = $this->productService->getSeeAllProduct($latitude, $longitude, 3);
 
         if ($products->isEmpty()) {
             return response()->json([

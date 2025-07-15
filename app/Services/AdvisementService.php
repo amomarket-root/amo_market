@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class AdvisementService
 {
-    public function getShopAdvisementNearby($latitude, $longitude, $radius = 2)
+    public function getShopAdvisementNearby($latitude, $longitude, $radius = 3)
     {
         // Generate a unique cache key based on location and radius
         $cacheKey = 'advisement_nearby_'.md5("lat:$latitude|lng:$longitude|radius:$radius");
