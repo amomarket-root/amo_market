@@ -28,8 +28,8 @@ const CashfreePaymentUI = ({ selectedMethod, onClose, apiUrl, onPaymentSuccess }
             // Create Cashfree payment order
             const paymentResponse = await axios.post(`${apiUrl}/portal/cashfree/create-order`, {
                 name: cartData.user.name,
-                email: cartData.user.email,
-                phone: cartData.user.number || '0000000000',
+                email: cartData.user.email || 'amomarket.info@gmail.com',
+                phone: cartData.user.number || '7008392889',
                 amount: cartData.grand_total,
                 user_cart_id: cartData.id // Changed to user_cart_id
             }, {

@@ -31,11 +31,12 @@ Route::get('/login/facebook', [PortalAuthenticateController::class, 'redirectToF
 Route::get('/login/facebook/callback', [PortalAuthenticateController::class, 'handleFacebookCallback']);
 
 Route::prefix('portal/authenticate')->group(function () {
-    // Authentication routes
     Route::post('/auth_mobile', [PortalAuthenticateController::class, 'authMobile']);
-    Route::post('auth_mobile_check', [PortalAuthenticateController::class, 'authMobile']);
-    Route::post('verify_Otp', [PortalAuthenticateController::class, 'verifyOtp']);
+    Route::post('/verify_Otp', [PortalAuthenticateController::class, 'verifyOtp']);
+    Route::post('/resend_otp', [PortalAuthenticateController::class, 'resendOtp']);
 });
+
+
 
 /* ---------------------------------------------------------- */
 /* ---------------- GUEST/PUBLIC ROUTES ----------------------- */

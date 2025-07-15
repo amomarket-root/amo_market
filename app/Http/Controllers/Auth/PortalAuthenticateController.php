@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -62,7 +63,7 @@ class PortalAuthenticateController extends Controller
 
         // Send welcome email if new user
         if ($isNewUser) {
-           Mail::to($user->email)->queue(new WelcomeEmail($user, 'google')); // For Google
+            Mail::to($user->email)->queue(new WelcomeEmail($user, 'google')); // For Google
         }
 
         // Create token
@@ -172,59 +173,12 @@ class PortalAuthenticateController extends Controller
         return response()->json(['message' => 'Your account has been deleted successfully.'], 200);
     }
 
-    public function sendOtpWhatsApp($phoneNumber, $otp)
-    {
-        try {
-            // Get Twilio credentials from .env
-            $sid    = env('TWILIO_SID');                      // Your Twilio Account SID
-            $token  = env('TWILIO_AUTH_TOKEN');              // Your Twilio Auth Token
-            $twilio = new Client($sid, $token);             // Twilio Client Initialization
-
-            // Prepare the message body
-            $messageBody = "Your one-time OTP is $otp. Do not share it with anyone.";
-
-            // Format phone number (add 'whatsapp:' prefix)
-            $formattedPhoneNumber = 'whatsapp:' . $phoneNumber;
-
-            // Send WhatsApp message
-            $message = $twilio->messages->create(
-                $formattedPhoneNumber,                // WhatsApp recipient (with international code)
-                [
-                    'from' => 'whatsapp:' . env('TWILIO_WHATSAPP_NUMBER'), // Twilio WhatsApp number
-                    'body' => $messageBody,                 // OTP message content
-                ]
-            );
-
-            // Return success response
-            return [
-                'status'          => true,
-                'message'         => 'WhatsApp OTP sent successfully!',
-                'twilio_response' => $message,
-            ];
-        } catch (RestException $e) {
-            // Handle Twilio-specific errors
-            return [
-                'status'  => false,
-                'message' => 'Failed to send WhatsApp OTP',
-                'error'   => $e->getMessage(),
-            ];
-        } catch (\Exception $e) {
-            // Handle general errors
-            return [
-                'status'  => false,
-                'message' => 'An unexpected error occurred while sending the OTP',
-                'error'   => $e->getMessage(),
-            ];
-        }
-    }
-
     public function authMobile(Request $request)
     {
         try {
-            // Validation rules including confirmation for password
             $validateUser = Validator::make($request->all(), [
-                'name'   => 'required|unique:users,name',
-                'number' => 'required|unique:users,number',
+                'name'   => 'required|string|unique:users,name',
+                'number' => 'required|digits:10|unique:users,number',
             ]);
 
             if ($validateUser->fails()) {
@@ -236,48 +190,36 @@ class PortalAuthenticateController extends Controller
             }
 
             $user = User::create([
-                'name'   => $request->name,
-                'number' => $request->number,
+                'name'     => $request->name,
+                'number'   => $request->number,
                 'password' => null,
-                'role_id' => Role::where('name', 'Customer')->first()->id,
-                'status' => '0',
+                'role_id'  => Role::where('name', 'Customer')->first()->id,
+                'status'   => 0,
             ]);
 
-            // Generate a new OTP
-            $otp = rand(100000, 999999);
+            $otp = rand(100000, 999999); // Manually generate OTP
+            $apiKey = env('TWO_FACTOR_API_KEY');
+            $phone  = '91' . $request->number;
 
-            // Save the OTP to the database
-            $user->update([
-                'otp'        => $otp,
-                'otp_expiry' => Carbon::now()->addMinutes(5),
-            ]);
+            $response = Http::get("https://2factor.in/API/V1/{$apiKey}/SMS/{$phone}/{$otp}/Amo+Market");
+            $data = $response->json();
 
-            // Default success response for local environment
-            if (app()->environment('local')) {
+            if (isset($data['Status']) && $data['Status'] === 'Success') {
+                $user->update([
+                    'otp'        => $otp,
+                    'otp_expiry' => now()->addMinutes(5),
+                ]);
+
                 return response()->json([
-                    'status'  => true,
-                    'message' => 'OTP generated (local environment)',
-                    'otp'     => $otp,
-                    'token'   => $user->createToken('API TOKEN')->plainTextToken,
-                ], 200);
-            }
-
-            // For other environments, send OTP via WhatsApp
-            $phoneNumber = '+917381883483'; // or $request->number if dynamic
-            $response    = $this->sendOtpWhatsApp($phoneNumber, $otp);
-
-            if ($response['status'] === true) {
-                return response()->json([
-                    'status'  => true,
-                    'message' => 'OTP sent successfully',
-                    'otp'     => $otp,
-                    'token'   => $user->createToken('API TOKEN')->plainTextToken,
+                    'status'     => true,
+                    'message'    => 'OTP sent successfully via template',
+                    'token'      => $user->createToken('API TOKEN')->plainTextToken,
                 ], 200);
             } else {
                 return response()->json([
                     'status'  => false,
-                    'message' => 'Failed to send OTP SMS, Try different Login Method',
-                    'error'   => $response['message'],
+                    'message' => 'Failed to send OTP',
+                    'error'   => $data,
                 ], 500);
             }
         } catch (\Throwable $th) {
@@ -291,9 +233,9 @@ class PortalAuthenticateController extends Controller
     public function verifyOtp(Request $request)
     {
         try {
-            // Validation rules for OTP
             $validateUser = Validator::make($request->all(), [
-                'otp' => 'required|digits:6',
+                'otp'    => 'required|digits:6',
+                'number' => 'required|digits:10',
             ]);
 
             if ($validateUser->fails()) {
@@ -304,35 +246,97 @@ class PortalAuthenticateController extends Controller
                 ], 422);
             }
 
-            $user = User::where('otp', $request->otp)
-                ->where('otp_expiry', '>=', Carbon::now())
-                ->first();
+            $user = User::where('number', $request->number)->first();
 
-            if ($user) {
+            if (
+                !$user ||
+                !$user->otp ||
+                !$user->otp_expiry ||
+                now()->gt($user->otp_expiry) ||
+                $user->otp !== $request->otp
+            ) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Invalid or expired OTP',
+                ], 401);
+            }
+
+            $user->update([
+                'number_verified_at' => now(),
+                'login_time'         => now(),
+                'status'             => 1,
+                'otp'                => null,
+                'otp_expiry'         => null,
+            ]);
+
+            $token = $user->createToken('API TOKEN')->plainTextToken;
+
+            return response()->json([
+                'message'         => 'OTP verified successfully',
+                'id' => $user->id,
+                'name' => $user->name,
+                'role_id' => $user->role_id,
+                'status' => $user->status,
+                'is_authenticate' => true,
+                'portal_token'    => $token,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status'  => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function resendOtp(Request $request)
+    {
+        try {
+            $validateUser = Validator::make($request->all(), [
+                'number' => 'required|digits:10|exists:users,number',
+            ]);
+
+            if ($validateUser->fails()) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Validation error',
+                    'errors'  => $validateUser->errors(),
+                ], 422);
+            }
+
+            $user = User::where('number', $request->number)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            $otp = rand(100000, 999999);
+            $apiKey = env('TWO_FACTOR_API_KEY');
+            $phone = '91' . $request->number;
+
+            $response = Http::get("https://2factor.in/API/V1/{$apiKey}/SMS/{$phone}/{$otp}/Amo+Market");
+            $data = $response->json();
+
+            if (isset($data['Status']) && $data['Status'] === 'Success') {
                 $user->update([
-                    'number_verified_at' => Carbon::now(),
-                    'login_time'         => Carbon::now(),
-                    'status'             => '1',
-                    'otp'                => null,
-                    'otp_expiry'         => null,
+                    'otp'        => $otp,
+                    'otp_expiry' => now()->addMinutes(5),
                 ]);
 
-                // Generate the API token
-                $authToken = $user->createToken('API TOKEN')->plainTextToken;
-
                 return response()->json([
-                    'status'       => true,
-                    'message'      => 'OTP verified successfully',
-                    'user_id'         => $user->id,
-                    'user_name'       => $user->name,
-                    'is_authenticate' => true,
-                    'portal_token' => $authToken,
+                    'status'     => true,
+                    'message'    => 'OTP resent successfully',
+                    'token'      => $user->createToken('API TOKEN')->plainTextToken,
+                    'otp'        => $otp, // For development/testing purposes
                 ], 200);
             } else {
                 return response()->json([
                     'status'  => false,
-                    'message' => 'Invalid OTP or OTP expired',
-                ], 401);
+                    'message' => 'Failed to resend OTP',
+                    'error'   => $data,
+                ], 500);
             }
         } catch (\Throwable $th) {
             return response()->json([
@@ -342,12 +346,11 @@ class PortalAuthenticateController extends Controller
         }
     }
 
-
     public function getProfileAvatar()
     {
         try {
             // Get the authenticated user
-            $user = auth()->user();
+            $user = Auth::user();
 
             if (! $user) {
                 return response()->json([
