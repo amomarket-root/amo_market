@@ -197,11 +197,12 @@ class PortalAuthenticateController extends Controller
                 'status'   => 0,
             ]);
 
-            $otp    = rand(100000, 999999); // Manually generate OTP
-            $apiKey = env('TWO_FACTOR_API_KEY');
+            $otp    = rand(100000, 999999);
+            $apiKey = config('services.two_factor.api_key');
             $phone  = '91'.$request->number;
+            $url    = config('services.two_factor.sms_url')."{$apiKey}/SMS/{$phone}/{$otp}/Amo+Market";
 
-            $response = Http::get("https://2factor.in/API/V1/{$apiKey}/SMS/{$phone}/{$otp}/Amo+Market");
+            $response = Http::get($url);
             $data     = $response->json();
 
             if (isset($data['Status']) && $data['Status'] === 'Success') {
@@ -309,10 +310,11 @@ class PortalAuthenticateController extends Controller
             }
 
             $otp    = rand(100000, 999999);
-            $apiKey = env('TWO_FACTOR_API_KEY');
+            $apiKey = config('services.two_factor.api_key');
             $phone  = '91'.$request->number;
+            $url    = config('services.two_factor.sms_url')."{$apiKey}/SMS/{$phone}/{$otp}/Amo+Market";
 
-            $response = Http::get("https://2factor.in/API/V1/{$apiKey}/SMS/{$phone}/{$otp}/Amo+Market");
+            $response = Http::get($url);
             $data     = $response->json();
 
             if (isset($data['Status']) && $data['Status'] === 'Success') {

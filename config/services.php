@@ -49,10 +49,16 @@ return [
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect' => env('APP_URL').'/api/login/facebook/callback' ?? env('FACEBOOK_REDIRECT_URL'),
     ],
+
     'cashfree' => [
         'api_key' => env('CASHFREE_API_KEY'),
         'api_secret' => env('CASHFREE_API_SECRET'),
         'env' => env('CASHFREE_ENV', 'sandbox'), // Good practice with default value
         'webhook_secret' => env('CASHFREE_WEBHOOK_SECRET'),
+    ],
+
+    'two_factor' => [
+        'api_key' => env('TWO_FACTOR_API_KEY'),
+        'sms_url' => 'https://2factor.in/API/V1/',
     ],
 ];

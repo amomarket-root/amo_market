@@ -40,7 +40,6 @@ class ProductService
                     $query->whereIn('shop_id', $shopIds);
                 })
                 ->orderBy('id', 'asc')
-                ->limit(20)
                 ->get();
 
             // Group the products by their category name
