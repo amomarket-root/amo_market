@@ -55,6 +55,7 @@ class UserCart extends ActiveModel
     {
         return $this->hasMany(Order::class);
     }
+
     public function payment()
     {
         return $this->hasOne(Payment::class);

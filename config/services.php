@@ -41,13 +41,13 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('APP_URL') . '/api/login/google/callback' ?? env('GOOGLE_REDIRECT_URI'),
+        'redirect' => env('APP_URL').'/api/login/google/callback' ?? env('GOOGLE_REDIRECT_URI'),
     ],
 
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
-        'redirect' =>  env('APP_URL') . '/api/login/facebook/callback' ?? env('FACEBOOK_REDIRECT_URL'),
+        'redirect' => env('APP_URL').'/api/login/facebook/callback' ?? env('FACEBOOK_REDIRECT_URL'),
     ],
     'cashfree' => [
         'api_key' => env('CASHFREE_API_KEY'),

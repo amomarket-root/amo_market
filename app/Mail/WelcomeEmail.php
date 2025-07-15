@@ -9,14 +9,16 @@ use Illuminate\Queue\SerializesModels;
 
 class WelcomeEmail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public $user;
+
     public $provider;
 
     public function __construct(User $user, string $provider)
     {
-        $this->user = $user;
+        $this->user     = $user;
         $this->provider = $provider;
     }
 
@@ -25,8 +27,8 @@ class WelcomeEmail extends Mailable
         return $this->subject('Welcome to Amo Market')
             ->view('emails.welcome')
             ->with([
-                'user' => $this->user,
-                'provider' => $this->provider
+                'user'     => $this->user,
+                'provider' => $this->provider,
             ]);
     }
 }

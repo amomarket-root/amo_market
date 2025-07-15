@@ -82,7 +82,7 @@ class UserCartService
             return false;
         } catch (\Exception $e) {
             // Log the error (optional)
-            Log::error('Error updating address in cart: ' . $e->getMessage());
+            Log::error('Error updating address in cart: '.$e->getMessage());
 
             return false;
         }

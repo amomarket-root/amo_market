@@ -65,6 +65,7 @@ class CategoryService
                 ->get();
         });
     }
+
     public function getServicesByShopLocation($latitude, $longitude, $radius = 3)
     {
         // Create a unique cache key based on location and radius

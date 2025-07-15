@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Payment extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuids;
 
     protected $fillable = [
         'name',
@@ -19,17 +20,20 @@ class Payment extends Model
         'order_id',
         'user_cart_id',
         'status',
-        'other'
+        'other',
     ];
 
     protected $casts = [
-        'other' => 'array',
-        'status' => 'boolean'
+        'other'  => 'array',
+        'status' => 'boolean',
     ];
 
     protected $primaryKey = 'id';
+
     protected $table = 'payments';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     public function userCart()

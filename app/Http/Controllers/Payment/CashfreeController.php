@@ -18,22 +18,22 @@ class CashfreeController extends Controller
             'email'        => 'required|email',
             'phone'        => 'required|digits:10',
             'amount'       => 'required|numeric|min:1',
-            'user_cart_id' => 'required|uuid|exists:user_carts,id' // Changed to user_cart_id
+            'user_cart_id' => 'required|uuid|exists:user_carts,id', // Changed to user_cart_id
         ]);
 
         // Verify the user cart belongs to the authenticated user
         $userCart = UserCart::where('id', $request->user_cart_id)
-                      ->where('user_id', $request->user()->id)
-                      ->first();
+            ->where('user_id', $request->user()->id)
+            ->first();
 
-        if (!$userCart) {
+        if (! $userCart) {
             return response()->json([
                 'success' => false,
-                'message' => 'User cart not found or does not belong to you'
+                'message' => 'User cart not found or does not belong to you',
             ], 404);
         }
 
-        $orderId = 'order_'.Str::uuid()->toString();
+        $orderId    = 'order_'.Str::uuid()->toString();
         $customerId = 'customer_'.Str::uuid()->toString();
 
         $baseUrl = config('services.cashfree.env') === 'sandbox'
@@ -95,10 +95,10 @@ class CashfreeController extends Controller
     public function paymentSuccess(Request $request)
     {
         try {
-            $orderId = $request->input('order_id');
+            $orderId    = $request->input('order_id');
             $userCartId = $request->input('user_cart_id'); // Changed to user_cart_id
 
-            if (!$orderId || !$userCartId) {
+            if (! $orderId || ! $userCartId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Missing order ID or user cart ID',
@@ -124,7 +124,7 @@ class CashfreeController extends Controller
             }
 
             $responseData = $response->json();
-            $status = ($responseData['order_status'] === 'PAID');
+            $status       = ($responseData['order_status'] === 'PAID');
 
             $payment = Payment::where('order_id', $orderId)->first();
             if ($payment) {
@@ -136,12 +136,12 @@ class CashfreeController extends Controller
             }
 
             return response()->json([
-                'success'     => $status,
-                'message'    => $status ? 'Payment Successful!' : 'Payment verification failed',
-                'payment_id' => $payment->id ?? null,
-                'order_id'   => $orderId,
+                'success'      => $status,
+                'message'      => $status ? 'Payment Successful!' : 'Payment verification failed',
+                'payment_id'   => $payment->id ?? null,
+                'order_id'     => $orderId,
                 'user_cart_id' => $userCartId, // Changed to user_cart_id
-                'amount'     => $payment->amount ?? 0,
+                'amount'       => $payment->amount ?? 0,
             ]);
         } catch (\Exception $e) {
             return response()->json([

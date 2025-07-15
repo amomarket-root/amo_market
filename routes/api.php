@@ -36,8 +36,6 @@ Route::prefix('portal/authenticate')->group(function () {
     Route::post('/resend_otp', [PortalAuthenticateController::class, 'resendOtp']);
 });
 
-
-
 /* ---------------------------------------------------------- */
 /* ---------------- GUEST/PUBLIC ROUTES ----------------------- */
 /* ---------------------------------------------------------- */

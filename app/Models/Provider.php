@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Provider extends ActiveModel
 {
-     use HasUuids;
+    use HasUuids;
 
     protected $keyType = 'string'; // Use string for UUIDs
 
@@ -15,8 +15,8 @@ class Provider extends ActiveModel
     protected $table = 'providers'; // Table name
 
     protected $primaryKey = 'id';    // Primary key field
-    protected $fillable = ['provider','provider_id','user_id','avatar'];
-    protected $hidden = ['created_at','updated_at'];
 
+    protected $fillable = ['provider', 'provider_id', 'user_id', 'avatar'];
+
+    protected $hidden = ['created_at', 'updated_at'];
 }
-
